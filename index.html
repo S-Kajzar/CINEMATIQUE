@@ -2967,7 +2967,7 @@ E perpendiculaire, A parallèle, O projeté, C cercle, K compas, M mesurer, P po
     Array.prototype.forEach.call(root.querySelectorAll(".jeu"), initJeu);
     initCartes(root);
   }
-  function fr(x, d) { return x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/^-/, "−"); }
+  function fr(x, d) { if (Math.abs(x) < 0.5 * Math.pow(10, -d)) x = 0; return x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/^-/, "−"); }
   var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   /* boucle d'animation partagée : une fonction par figure, suspendue quand la page est cachée */
   function animer(f) {
@@ -3190,7 +3190,7 @@ E perpendiculaire, A parallèle, O projeté, C cercle, K compas, M mesurer, P po
       var t = 10, court = false;
       Array.prototype.forEach.call(box.querySelectorAll("[data-pre]"), function (b) {
         b.addEventListener("click", function () {
-          var p = { u: [0, 6, 0], a: [0, 0, 2.5], f: [0, 18, -3] }[b.getAttribute("data-pre")];
+          var p = { u: [0, 6, 0], a: [0, 0, 2.5], f: [0, 20, -1.5] }[b.getAttribute("data-pre")];
           x0r.value = p[0]; v0r.value = p[1]; gr.value = p[2]; t = 10; dessin();
         });
       });

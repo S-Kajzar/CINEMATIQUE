@@ -499,7 +499,7 @@ JS = r"""
       var t = 10, court = false;
       Array.prototype.forEach.call(box.querySelectorAll("[data-pre]"), function (b) {
         b.addEventListener("click", function () {
-          var p = { u: [0, 6, 0], a: [0, 0, 2.5], f: [0, 18, -3] }[b.getAttribute("data-pre")];
+          var p = { u: [0, 6, 0], a: [0, 0, 2.5], f: [0, 20, -1.5] }[b.getAttribute("data-pre")];
           x0r.value = p[0]; v0r.value = p[1]; gr.value = p[2]; t = 10; dessin();
         });
       });

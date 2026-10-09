@@ -154,7 +154,7 @@ JS = r"""
     Array.prototype.forEach.call(root.querySelectorAll(".jeu"), initJeu);
     initCartes(root);
   }
-  function fr(x, d) { return x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/^-/, "−"); }
+  function fr(x, d) { if (Math.abs(x) < 0.5 * Math.pow(10, -d)) x = 0; return x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/^-/, "−"); }
   var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   /* boucle d'animation partagée : une fonction par figure, suspendue quand la page est cachée */
   function animer(f) {
