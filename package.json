@@ -1,0 +1,13 @@
+{
+  "name": "cinematique-interactive",
+  "private": true,
+  "description": "Cours et activités interactifs autonomes : cinématique analytique et cinématique graphique (équiprojectivité, CIR, composition des vitesses), atelier de construction",
+  "scripts": {
+    "images": "bash outils/preparer-images.sh",
+    "generer": "python3 src/generer.py",
+    "test": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
+}
