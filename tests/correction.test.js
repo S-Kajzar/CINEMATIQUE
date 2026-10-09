@@ -15,6 +15,7 @@ const G = mod.exports;
 const EXOS = JSON.parse(html.match(/window\.__EXOS__ = (.*?);<\/script>/)[1]);
 const AT = JSON.parse(html.match(/window\.__ATELIERS__ = (.*?);<\/script>/)[1]);
 const ACTS = ["arbre-transmission", "embiellage-moto", "pompe-petrole", "ellipsographe", "portail-vis", "chargeur-bobcat", "suspension-vtt"];
+const crypto = require("node:crypto");
 const score = (ans, gr) => { const r = G.grade(ans, gr); return r.invalid ? "invalid" : r.score; };
 const fr = (x, d) => x.toFixed(d).replace(".", ",");
 
@@ -30,6 +31,11 @@ function etiquettes(key) {
   }
   return out;
 }
+
+test("gabarit : copie conforme de celui du dépôt Chaîne fonctionnelle (empreinte SHA-256)", () => {
+  const g = fs.readFileSync(path.join(__dirname, "..", "src", "gabarit-exercice-interactif.html"));
+  assert.equal(crypto.createHash("sha256").update(g).digest("hex"), "d39968afd8d398aed6e0b56968445e3b9ddbd19d503efe9adabef898d93db91a");
+});
 
 test("configuration : sept activités, une feuille par partie, barème cohérent", () => {
   assert.deepEqual(Object.keys(EXOS), ACTS);

@@ -192,7 +192,7 @@ lui-même au cours du déplacement.</p>
 <button type="button" class="btn ghost" data-m="tr" aria-pressed="false">Translation rectiligne</button>
 <button type="button" class="btn ghost" data-m="tq" aria-pressed="false">Translation curviligne</button>
 <button type="button" class="btn ghost" data-m="pl" aria-pressed="false">Mouvement plan</button></div>
-<div class="simu-fig"><svg viewBox="0 0 760 300" role="img" aria-label="Pièce en mouvement ; trajectoires de trois de ses points et leurs vecteurs vitesse"><g class="cg-m-monde"></g></svg></div>
+<div class="simu-fig"><svg viewBox="0 0 760 340" role="img" aria-label="Pièce en mouvement ; trajectoires de trois de ses points et leurs vecteurs vitesse"><g class="cg-m-monde"></g></svg></div>
 <p class="simu-note">Trois points de la pièce laissent leur trace (rouge, vert, bleu) ; les flèches sont leurs
 vecteurs vitesse à l'instant affiché.</p></div>
 <h3>Jeu : la nature des trajectoires</h3>{jeu_traj}
@@ -380,33 +380,36 @@ JS = r"""
     (function () {
       var box = q("#cg-mvt"); if (!box) return;
       var g = box.querySelector(".cg-m-monde"), mode = "ro", traces = [[], [], []];
-      var forme = [[0, -55], [26, -55], [34, -38], [16, -30], [16, 30], [-12, 30], [-12, -40]];
-      var pts = [[6, 22], [20, -46], [-4, -18]], cols = ["#B42318", "#1B7A43", "#1F5FA8"];
+      // la pièce de la séquence (deux fois plus grande) ; en rotation, elle tourne autour de son alésage (0, 60)
+      var forme = [[0, -110], [52, -110], [68, -76], [32, -60], [32, 76], [-24, 76], [-24, -80]];
+      var pts = [[14, 30], [44, -96], [-12, -40]], cols = ["#B42318", "#1B7A43", "#1F5FA8"], piv = [4, 60];
       Array.prototype.forEach.call(box.querySelectorAll("[data-m]"), function (b) {
         b.addEventListener("click", function () {
           mode = b.getAttribute("data-m"); traces = [[], [], []];
           Array.prototype.forEach.call(box.querySelectorAll("[data-m]"), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
         });
       });
-      function pose(t) {  // position (x, y) et angle a de la pièce
-        var s = Math.sin(t), c = Math.cos(t);
-        if (mode === "ro") return [380, 170, t * 0.9];
-        if (mode === "tc") return [380 + 120 * Math.cos(t * 0.9), 160 + 70 * Math.sin(t * 0.9), 0];
-        if (mode === "tr") return [380 + 230 * s * 0.8, 150 - 60 * s * 0.8, 0];
-        if (mode === "tq") return [380 + 230 * Math.sin(t * 0.6), 160 + 50 * Math.sin(t * 1.5), 0];
-        return [380 + 200 * Math.sin(t * 0.6), 160 + 40 * c, 0.6 * Math.sin(t * 0.8)];
+      function pose(t) {  // position (x, y) de l'alésage et angle a de la pièce
+        if (mode === "ro") return [380, 220, -0.9 + 0.8 * Math.sin(t * 0.8)];
+        if (mode === "tc") return [380 + 90 * Math.cos(t * 0.9), 190 + 55 * Math.sin(t * 0.9), 0];
+        if (mode === "tr") return [380 + 230 * Math.sin(t * 0.7), 205 - 40 * Math.sin(t * 0.7), 0];
+        if (mode === "tq") return [380 + 230 * Math.sin(t * 0.5), 200 + 30 * Math.sin(t * 1.4), 0];
+        return [380 + 200 * Math.sin(t * 0.5), 200 + 25 * Math.cos(t * 0.9), 0.5 * Math.sin(t * 0.7)];
       }
-      function place(p, P) { var ca = Math.cos(P[2]), sa = Math.sin(P[2]); return [P[0] + p[0] * ca - p[1] * sa, P[1] + p[0] * sa + p[1] * ca]; }
+      function place(p, P) { var q = [p[0] - piv[0], p[1] - piv[1]], ca = Math.cos(P[2]), sa = Math.sin(P[2]); return [P[0] + q[0] * ca - q[1] * sa, P[1] + q[0] * sa + q[1] * ca]; }
       animer(function (t) {
         if (RM) t = 1;
         g.innerHTML = "";
         var P = pose(t), P2 = pose(t + 0.02);
-        if (mode === "ro") el(g, "circle", { cx: 380, cy: 170, r: 6, fill: "#fff", stroke: "#1C2530", "stroke-width": 2 });
+
         pts.forEach(function (p, i) {
           var a = place(p, P); traces[i].push(a); if (traces[i].length > 420) traces[i].shift();
           if (traces[i].length > 1) el(g, "polyline", { points: traces[i].map(function (x) { return x[0].toFixed(1) + "," + x[1].toFixed(1); }).join(" "), fill: "none", stroke: cols[i], "stroke-width": 1.6 });
         });
         el(g, "polygon", { points: forme.map(function (p) { var a = place(p, P); return a[0].toFixed(1) + "," + a[1].toFixed(1); }).join(" "), fill: "#8E979F", stroke: "#1C2530", "stroke-width": 2, opacity: 0.9 });
+        var h = place(piv, P);
+        el(g, "circle", { cx: h[0], cy: h[1], r: 7, fill: "#fff", stroke: "#1C2530", "stroke-width": 2 });
+        if (mode === "ro") { el(g, "line", { x1: h[0] - 14, y1: h[1] + 16, x2: h[0] + 14, y2: h[1] + 16, stroke: "#1C2530", "stroke-width": 2 }); el(g, "line", { x1: h[0], y1: h[1] + 7, x2: h[0], y2: h[1] + 16, stroke: "#1C2530", "stroke-width": 2 }); }
         pts.forEach(function (p, i) {
           var a = place(p, P), b = place(p, P2), vx = (b[0] - a[0]) * 22, vy = (b[1] - a[1]) * 22;
           el(g, "circle", { cx: a[0], cy: a[1], r: 4, fill: cols[i], stroke: "#fff" });

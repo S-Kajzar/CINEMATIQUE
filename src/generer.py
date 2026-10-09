@@ -249,9 +249,10 @@ def prepare_exo(e):
                     qcfg[fid] = {"label": f"{b['num']} — {re.sub(r'<[^>]+>', '', fl)}", "part": p["num"], "pts": 1,
                                  "grader": gr}
     np_ = len(parts)
-    e["cfg"] = {"title": e["title"], "minutes": e["minutes"], "duree": hm(e["minutes"]), "atelier": True,
-                "cartouche": f"{e['n_q']} questions, {e['points']} points dont {e['n_trace']} éléments à construire sur "
-                             f"la feuille, en {np_} partie{'s' if np_ > 1 else ''}"
+    traces = f" dont {e['n_trace']} éléments à construire sur la feuille" if e["n_trace"] else ""
+    e["cfg"] = {"title": e["title"], "minutes": e["minutes"], "duree": hm(e["minutes"]),
+                "atelier": any(p.get("meca") for p in parts),
+                "cartouche": f"{e['n_q']} questions, {e['points']} points{traces}, en {np_} partie{'s' if np_ > 1 else ''}"
                              + (" pondérées par leur durée." if np_ > 1 else "."),
                 "parts": parts_cfg, "qcfg": qcfg, "skcfg": {}}
 
@@ -356,10 +357,11 @@ def render_exo_home(e, docs):
     facts = ('<div class="home-facts">'
              f'<div><b>{e["n_q"]} questions</b><span>{e["points"]} points</span></div>'
              f'<div><b>{hm(e["minutes"])}</b><span>durée conseillée</span></div>'
-             f'<div><b>{e["n_trace"]} tracés</b><span>vérifiés sur la feuille</span></div>'
-             f'<div><b>{len(docs)} document{"s" if len(docs) > 1 else ""}</b><span>{docs_txt}</span></div></div>')
+             + (f'<div><b>{e["n_trace"]} tracés</b><span>vérifiés sur la feuille</span></div>' if e["n_trace"] else
+                f'<div><b>{len(e["P"])} partie{"s" if len(e["P"]) > 1 else ""}</b><span>pondérées par leur durée</span></div>')
+             + f'<div><b>{len(docs)} document{"s" if len(docs) > 1 else ""}</b><span>{docs_txt}</span></div></div>')
     return (f'<div class="home-top{"" if fig else " home-top-single"}"><div class="home-top-l"><header class="home-head">'
-            f'<span class="mc-tag">{e["tag"]}</span>{pastille("graphique")}'
+            f'<span class="mc-tag">{e["tag"]}</span>{pastille(e.get("partie", "graphique"))}'
             f'<h1 id="home-title">{e["title"]}</h1><p class="home-sub">{e["sub"]}</p></header>{facts}</div>{fig}</div>')
 
 
@@ -433,10 +435,13 @@ def render_hub(exos):
                           c["vign"], c["alt"], "cours-card") for c in COURS)
     outil = carte(ATELIER_LIBRE["tag"], ATELIER_LIBRE["title"], ATELIER_LIBRE["mots"], f'?ex={ATELIER_LIBRE["key"]}',
                   "Ouvrir l'atelier", ATELIER_LIBRE["vign"], ATELIER_LIBRE["alt"])
-    a = ANALYTIQUE_A_VENIR
-    analytique = carte(a[0] + pastille("analytique"), a[1], a[2], None, None, a[3], a[4], "en-edition")
-    graphiques = "".join(carte(e["tag"] + pastille("graphique"), e["title"], e["mots"], f'?ex={e["key"]}', OUVRIR,
-                               f'carte-{e["key"]}', e["title"]) for e in exos)
+    def cartes_de(partie):
+        return "".join(carte(e["tag"] + pastille(partie), e["title"], e["mots"], f'?ex={e["key"]}', OUVRIR,
+                             f'carte-{e["key"]}', e["title"]) for e in exos if e.get("partie", "graphique") == partie)
+    a = ANALYTIQUE_A_VENIR  # tant qu'aucune activité analytique n'est décrite, une carte l'annonce
+    analytique = cartes_de("analytique") or carte(a[0] + pastille("analytique"), a[1], a[2], None, None, a[3], a[4],
+                                                  "en-edition")
+    graphiques = cartes_de("graphique")
     t = ETUDE_A_VENIR
     etudes = carte(t[0], t[1], t[2], None, None, t[3], t[4], "en-edition")
     return (f'<div class="home-top{"" if hero else " home-top-single"}"><div class="home-top-l"><header class="home-head">'

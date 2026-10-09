@@ -1,6 +1,7 @@
 /* ==================== ATELIER DE CONSTRUCTION GRAPHIQUE ==================== */
 /* zone de travail d'une partie : la feuille (collée en haut de l'écran) et les questions à côté */
 body.exo-atelier .page{max-width:1500px}
+@media (min-width:761px){ body.exo-atelier .page{padding-right:calc(var(--rail) + 12px)} }
 .at-zone{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr); gap:18px; align-items:start; margin:14px 0 6px}
 .at-zone>.atelier{position:sticky; top:8px}
 .at-zone>.at-questions{min-width:0}

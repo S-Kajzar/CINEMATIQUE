@@ -190,7 +190,7 @@ def arbre():
         + donnees("Ø<sub>1</sub> = 50 mm (roue 1) et Ø<sub>4</sub> = 100 mm (roue 4)", "N<sub>4/0</sub> = N<sub>1/0</sub> = 1 000 tr/min, sens horaire",
                   "Échelle des vitesses : 10 mm pour 1 m/s ; dessin à l'échelle 1:1")
         + "</div>" + "__FIG:photo-arbre|Arbre de transmission et ses roues dentées (1) et (4)|Roues (1) et (4) encastrées sur l'arbre.|300__</div>"]
-    return {"key": "arbre-transmission", "prefix": "a", "tag": "Activité 2.1", "title": "Arbre de transmission",
+    return {"key": "arbre-transmission", "prefix": "a", "partie": "graphique", "tag": "Activité 2.1", "title": "Arbre de transmission",
             "mots": ["Rotation", "V = R·ω", "Projection", "Équiprojectivité"], "methode": "Rotation",
             "sub": "Une seule vitesse de rotation, trois points : tracer les vitesses de dentures à l'échelle, les "
                    "projeter sur la droite qui les joint et découvrir l'équiprojectivité.",
@@ -247,7 +247,7 @@ def embiellage():
         + donnees("N<sub>1/0</sub> = 7 500 tr/min (sens indiqué sur le schéma) et AB = 39 mm",
                   "Échelle des vitesses : 10 mm pour 5 m/s ; schéma à l'échelle 1:2") + "</div>"
         "__FIG:photo-embiellage|Coupe d'un cylindre de l'embiellage : piston, bielle, vilebrequin|Coupe d'un cylindre (dossier DP1).|190__</div>"]
-    return {"key": "embiellage-moto", "prefix": "b", "tag": "Activité 2.2", "title": "Embiellage de moto",
+    return {"key": "embiellage-moto", "prefix": "b", "partie": "graphique", "tag": "Activité 2.2", "title": "Embiellage de moto",
             "mots": ["Bielle-manivelle", "Équiprojectivité", "Moteur en V"], "methode": "Équiprojectivité",
             "sub": "Un vilebrequin, deux bielles, deux pistons : de la vitesse du maneton, déduire celle de chaque piston "
                    "par équiprojectivité.",
@@ -325,7 +325,7 @@ def pompe():
         + donnees("AB = 570 mm ; BC = 2 640 mm ; CD = 2 310 mm ; DE = 3 400 mm", "N<sub>1/0</sub> = 15 tr/min, uniforme, sens horaire",
                   "Échelle des vitesses : 10 mm pour 0,2 m/s ; dessin à l'échelle 1:40") + "</div>"
         "__FIG:photo-pompe|Pompe à pétrole « tête de cheval » : manivelle, biellette, balancier et câble|La pompe (figure 1 de la séquence).|330__</div>"]
-    return {"key": "pompe-petrole", "prefix": "c", "tag": "Activité 2.3", "title": "Pompe à pétrole brut",
+    return {"key": "pompe-petrole", "prefix": "c", "partie": "graphique", "tag": "Activité 2.3", "title": "Pompe à pétrole brut",
             "mots": ["Rotation", "Équiprojectivité", "Débit"], "methode": "Équiprojectivité",
             "sub": "De la manivelle à la tête de cheval : vitesse du câble par équiprojectivité, puis débit de pétrole "
                    "dans la position étudiée.",
@@ -392,7 +392,7 @@ def ellipsographe():
         + donnees("‖V(A∈1/0)‖ = 3 cm/s ; la coulisse (1) se déplace dans le sens positif de <span class=vec>x</span>",
                   "Échelle des vitesses : 10 mm pour 1 cm/s",
                   "Objectif : déterminer les vitesses de déplacement des points M et B")]
-    return {"key": "ellipsographe", "prefix": "d", "tag": "Activité 2.4", "title": "Ellipsographe",
+    return {"key": "ellipsographe", "prefix": "d", "partie": "graphique", "tag": "Activité 2.4", "title": "Ellipsographe",
             "mots": ["Translation", "Mouvement plan", "CIR"], "methode": "CIR",
             "sub": "Deux coulisses, une barre porte-mine : trouver le centre instantané de rotation de la barre et en "
                    "déduire la vitesse du crayon.",
@@ -474,7 +474,7 @@ def portail():
         "cylindriques dont les roues ont 90 et 270 dents. L'étude porte sur la fermeture du portail.</p>"
         + donnees("Vis (5) : N<sub>5/4</sub> = 600 tr/min, pas p = 6 mm", "Engrenage : pignon moteur 90 dents, roue de la vis 270 dents",
                   "Dessin à l'échelle 1:10 ; échelle des vitesses : 1 cm pour 0,02 m/s")]
-    return {"key": "portail-vis", "prefix": "e", "tag": "Activité 2.5", "title": "Portail à vis",
+    return {"key": "portail-vis", "prefix": "e", "partie": "graphique", "tag": "Activité 2.5", "title": "Portail à vis",
             "mots": ["Vis-écrou", "CIR", "Position fermée", "Engrenages"], "methode": "CIR",
             "sub": "Un écrou qui avance sur sa vis, une bielle, un portail qui pivote : vitesses par le CIR, vitesse "
                    "angulaire et nombre de tours du moteur pour fermer.",
@@ -569,7 +569,7 @@ def bobcat():
                   "Objectif : vérifier que ‖V(H∈1/0)‖ ≤ 1,2 m/s", "Échelle des vitesses : 10 mm pour 50 mm/s")
         + "<p class=\"small\">Repères : 0 bâti (châssis) ; 1 bras de levage ; 2 biellette arrière (A, B) ; 3 biellette "
         "avant (F, E) ; 4 corps du vérin ; 5 tige du vérin.</p>"]
-    return {"key": "chargeur-bobcat", "prefix": "f", "tag": "Activité 2.6", "title": "Chargeur Bobcat S185",
+    return {"key": "chargeur-bobcat", "prefix": "f", "partie": "graphique", "tag": "Activité 2.6", "title": "Chargeur Bobcat S185",
             "mots": ["CIR", "Composition", "Équiprojectivité", "Sécurité"], "methode": "Composition",
             "sub": "Le vérin de levage d'un chargeur compact : composer les vitesses au point C, puis vérifier la vitesse "
                    "du godet par rapport à une condition de sécurité.",
@@ -681,7 +681,7 @@ def vtt():
         "S4 piston de l'amortisseur ; S5 corps de l'amortisseur.</p>"
         + donnees("‖V(G∈S1/S0)‖ = 30 m/s", "Échelle de ce document réponse : 1 cm pour 6 m/s") + "</div>"
         "__FIG:photo-vtt|VTT tout suspendu à cadre aluminium|Le VTT étudié.|300__</div>"]
-    return {"key": "suspension-vtt", "prefix": "g", "tag": "Activité 2.7", "title": "Suspension du VTT Vario Bomba",
+    return {"key": "suspension-vtt", "prefix": "g", "partie": "graphique", "tag": "Activité 2.7", "title": "Suspension du VTT Vario Bomba",
             "mots": ["CIR", "Équiprojectivité", "Composition", "Amortisseur"], "methode": "Composition",
             "sub": "De la roue à l'amortisseur : trois documents réponses pour enchaîner CIR, équiprojectivité et "
                    "composition des vitesses, et valider le cahier des charges.",

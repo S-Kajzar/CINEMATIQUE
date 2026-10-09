@@ -532,7 +532,7 @@ body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
 .cours-sec .part-body h3{font:700 1.12rem var(--f-titre); margin:18px 0 6px; color:var(--bleu)}
 .cours-sec .part-body h4{font:700 1rem var(--f-titre); margin:14px 0 4px}
 .formule{display:flex; flex-wrap:wrap; gap:14px 28px; align-items:center; border:2px solid var(--rouge); background:#fff; padding:10px 18px; margin:12px 0; max-width:720px}
-.formule .f-main{font:700 1.35rem var(--f-titre); line-height:2}
+.formule .f-main{font:700 1.3rem var(--f-texte); line-height:2}
 .formule .f-units{font-size:.9rem; color:var(--encre-2)}
 .def{border-left:6px solid var(--rouge); background:#fff; padding:8px 14px; margin:12px 0; max-width:86ch}
 .def p{margin:.25rem 0}
@@ -540,7 +540,9 @@ body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
 .simu h3{margin:0 0 8px!important; font:700 1.15rem var(--f-titre); color:var(--bleu)!important}
 .simu-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px 18px}
 @media (max-width:760px){ .simu-grid{grid-template-columns:1fr} }
-.simu-grid label{display:flex; flex-direction:column; gap:4px; font-weight:600; font-size:.92rem}
+.simu-grid label{display:block; font-weight:600; font-size:.92rem}
+.simu-grid label output{margin-left:6px}
+.simu-grid label input[type=range],.simu-grid label select{display:block; margin-top:4px}
 .simu-grid output{font:700 1rem var(--f-titre); color:var(--bleu)}
 .simu-grid input[type=range]{width:100%; accent-color:var(--bleu)}
 .simu-grid select{padding:5px; border:1.5px solid var(--encre-2); background:#fff; font:inherit}
@@ -571,7 +573,7 @@ body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
 #qz-stars{color:var(--jaune); font-size:1.6rem; letter-spacing:2px}
 .jeu{border:2px solid var(--encre); background:#fff; padding:10px 14px; margin:12px 0 0}
 .jeu-l{display:flex; flex-wrap:wrap; gap:6px 8px; align-items:center; padding:6px 0; border-top:1px solid var(--trait-fin)}
-.jeu-l>span{flex:1 1 240px; font-weight:600}
+.jeu-l>span{flex:1 1 170px; font-weight:600}
 .jeu-l .btn{padding:4px 9px; font-size:.88rem}
 .jeu-l .btn.pick-ok{background:var(--vert); border-color:var(--vert); color:#fff}
 .jeu-l .btn.pick-ko{background:var(--rouge); border-color:var(--rouge); color:#fff}
@@ -622,6 +624,7 @@ table.t.cours-t td,table.t.cours-t th{vertical-align:middle}
 <style>/* ==================== ATELIER DE CONSTRUCTION GRAPHIQUE ==================== */
 /* zone de travail d'une partie : la feuille (collée en haut de l'écran) et les questions à côté */
 body.exo-atelier .page{max-width:1500px}
+@media (min-width:761px){ body.exo-atelier .page{padding-right:calc(var(--rail) + 12px)} }
 .at-zone{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr); gap:18px; align-items:start; margin:14px 0 6px}
 .at-zone>.atelier{position:sticky; top:8px}
 .at-zone>.at-questions{min-width:0}
@@ -2617,7 +2620,7 @@ identiques, de direction celle du mouvement, et leurs vecteurs accélération au
 <p>Le solide (S1) tourne autour de O par rapport à R0. Son point M décrit un cercle de centre O et de rayon r = OM ; sa
 position est repérée par l'angle θ, qui varie au cours du temps : <span class="vec">OM</span> = (r cos θ)·<span class=vec>x</span> + (r sin θ)·<span class=vec>y</span>.</p>
 <div class="cours-split"><div>
-<div class="formule"><span class="f-main">ω = dθ/dt</span><span class="f-units">vitesse angulaire, en rad/s (ω = θ / t si elle est constante)</span></div>
+<div class="formule"><span class="f-main">ω = dθ/dt</span><span class="f-units">vitesse angulaire, en rad/s ; ω = θ / t si elle est constante et si θ = 0 à t = 0</span></div>
 <div class="formule"><span class="f-main">ω = 2π·N / 60</span><span class="f-units">N en tr/min</span></div>
 </div><div>
 <div class="formule"><span class="f-main">V = r·ω</span><span class="f-units">V en m/s, r en m, ω en rad/s</span></div>
@@ -2753,7 +2756,7 @@ lui-même au cours du déplacement.</p>
 <button type="button" class="btn ghost" data-m="tr" aria-pressed="false">Translation rectiligne</button>
 <button type="button" class="btn ghost" data-m="tq" aria-pressed="false">Translation curviligne</button>
 <button type="button" class="btn ghost" data-m="pl" aria-pressed="false">Mouvement plan</button></div>
-<div class="simu-fig"><svg viewBox="0 0 760 300" role="img" aria-label="Pièce en mouvement ; trajectoires de trois de ses points et leurs vecteurs vitesse"><g class="cg-m-monde"></g></svg></div>
+<div class="simu-fig"><svg viewBox="0 0 760 340" role="img" aria-label="Pièce en mouvement ; trajectoires de trois de ses points et leurs vecteurs vitesse"><g class="cg-m-monde"></g></svg></div>
 <p class="simu-note">Trois points de la pièce laissent leur trace (rouge, vert, bleu) ; les flèches sont leurs
 vecteurs vitesse à l'instant affiché.</p></div>
 <h3>Jeu : la nature des trajectoires</h3><div class="jeu" id="cg-jeu-traj"><div class="jeu-l" data-ok="cc"><span>Rotation</span><button type="button" class="btn ghost" data-v="cc">Cercles concentriques</button><button type="button" class="btn ghost" data-v="cr">Cercles de même rayon</button><button type="button" class="btn ghost" data-v="dp">Droites parallèles</button><button type="button" class="btn ghost" data-v="ci">Courbes identiques</button><button type="button" class="btn ghost" data-v="cq">Courbes quelconques</button><b class="jeu-fb" aria-live="polite"></b></div><div class="jeu-l" data-ok="cr"><span>Translation circulaire</span><button type="button" class="btn ghost" data-v="cc">Cercles concentriques</button><button type="button" class="btn ghost" data-v="cr">Cercles de même rayon</button><button type="button" class="btn ghost" data-v="dp">Droites parallèles</button><button type="button" class="btn ghost" data-v="ci">Courbes identiques</button><button type="button" class="btn ghost" data-v="cq">Courbes quelconques</button><b class="jeu-fb" aria-live="polite"></b></div><div class="jeu-l" data-ok="dp"><span>Translation rectiligne</span><button type="button" class="btn ghost" data-v="cc">Cercles concentriques</button><button type="button" class="btn ghost" data-v="cr">Cercles de même rayon</button><button type="button" class="btn ghost" data-v="dp">Droites parallèles</button><button type="button" class="btn ghost" data-v="ci">Courbes identiques</button><button type="button" class="btn ghost" data-v="cq">Courbes quelconques</button><b class="jeu-fb" aria-live="polite"></b></div><div class="jeu-l" data-ok="ci"><span>Translation curviligne</span><button type="button" class="btn ghost" data-v="cc">Cercles concentriques</button><button type="button" class="btn ghost" data-v="cr">Cercles de même rayon</button><button type="button" class="btn ghost" data-v="dp">Droites parallèles</button><button type="button" class="btn ghost" data-v="ci">Courbes identiques</button><button type="button" class="btn ghost" data-v="cq">Courbes quelconques</button><b class="jeu-fb" aria-live="polite"></b></div><div class="jeu-l" data-ok="cq"><span>Mouvement plan</span><button type="button" class="btn ghost" data-v="cc">Cercles concentriques</button><button type="button" class="btn ghost" data-v="cr">Cercles de même rayon</button><button type="button" class="btn ghost" data-v="dp">Droites parallèles</button><button type="button" class="btn ghost" data-v="ci">Courbes identiques</button><button type="button" class="btn ghost" data-v="cq">Courbes quelconques</button><b class="jeu-fb" aria-live="polite"></b></div><p class="jeu-score" aria-live="polite">Score : <span class="jeu-s">0 / 5</span> <button type="button" class="btn ghost jeu-reset">Recommencer</button></p></div>
@@ -3026,8 +3029,11 @@ E perpendiculaire, A parallèle, O projeté, C cercle, K compas, M mesurer, P po
         el(g, "circle", { cx: xp, cy: 118, r: 6, fill: "#B42318" });
         el(g, "line", { x1: xp, y1: 124, x2: xp, y2: 142, stroke: "#B42318", "stroke-width": 3 });
         el(g, "text", { x: xp + 8, y: 112, "font-size": 15, "font-weight": 700, fill: "#B42318" }, "2");
-        if (trace.length < 400) trace.push(xp); else trace.shift(), trace.push(xp);
-        if (vue === 0 && marche !== 0) el(g, "text", { x: 12, y: 30, "font-size": 14, fill: "#1F5FA8" }, "Depuis le quai, le voyageur avance avec le train.");
+        // trajectoire du voyageur dans le repère d'observation : ses positions successives à l'écran
+        if (trace.length && Math.abs(xp - trace[trace.length - 1]) > 40) trace = [];
+        trace.push(xp); if (trace.length > 600) trace.shift();
+        if (trace.length > 1) el(g, "line", { x1: Math.min.apply(null, trace), y1: 148, x2: Math.max.apply(null, trace), y2: 148, stroke: "#B42318", "stroke-width": 2.5, "stroke-dasharray": "6 4" });
+        el(g, "text", { x: 12, y: 30, "font-size": 14, fill: "#B42318" }, "En rouge, en pointillés : la trajectoire du voyageur (2) dans ce repère.");
         el(g, "text", { x: 12, y: 50, "font-size": 14, fill: "#46525C" }, vue === 0 ? "Repère R0 lié à la voie (0)" : "Repère R1 lié au wagon (1) : c'est la voie qui défile");
         el(g, "text", { x: 700, y: 200, "font-size": 15, "font-weight": 700, "text-anchor": "end" }, "0");
         var v20 = V10 + marche * V21, v21 = marche * V21;
@@ -3312,33 +3318,36 @@ E perpendiculaire, A parallèle, O projeté, C cercle, K compas, M mesurer, P po
     (function () {
       var box = q("#cg-mvt"); if (!box) return;
       var g = box.querySelector(".cg-m-monde"), mode = "ro", traces = [[], [], []];
-      var forme = [[0, -55], [26, -55], [34, -38], [16, -30], [16, 30], [-12, 30], [-12, -40]];
-      var pts = [[6, 22], [20, -46], [-4, -18]], cols = ["#B42318", "#1B7A43", "#1F5FA8"];
+      // la pièce de la séquence (deux fois plus grande) ; en rotation, elle tourne autour de son alésage (0, 60)
+      var forme = [[0, -110], [52, -110], [68, -76], [32, -60], [32, 76], [-24, 76], [-24, -80]];
+      var pts = [[14, 30], [44, -96], [-12, -40]], cols = ["#B42318", "#1B7A43", "#1F5FA8"], piv = [4, 60];
       Array.prototype.forEach.call(box.querySelectorAll("[data-m]"), function (b) {
         b.addEventListener("click", function () {
           mode = b.getAttribute("data-m"); traces = [[], [], []];
           Array.prototype.forEach.call(box.querySelectorAll("[data-m]"), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
         });
       });
-      function pose(t) {  // position (x, y) et angle a de la pièce
-        var s = Math.sin(t), c = Math.cos(t);
-        if (mode === "ro") return [380, 170, t * 0.9];
-        if (mode === "tc") return [380 + 120 * Math.cos(t * 0.9), 160 + 70 * Math.sin(t * 0.9), 0];
-        if (mode === "tr") return [380 + 230 * s * 0.8, 150 - 60 * s * 0.8, 0];
-        if (mode === "tq") return [380 + 230 * Math.sin(t * 0.6), 160 + 50 * Math.sin(t * 1.5), 0];
-        return [380 + 200 * Math.sin(t * 0.6), 160 + 40 * c, 0.6 * Math.sin(t * 0.8)];
+      function pose(t) {  // position (x, y) de l'alésage et angle a de la pièce
+        if (mode === "ro") return [380, 220, -0.9 + 0.8 * Math.sin(t * 0.8)];
+        if (mode === "tc") return [380 + 90 * Math.cos(t * 0.9), 190 + 55 * Math.sin(t * 0.9), 0];
+        if (mode === "tr") return [380 + 230 * Math.sin(t * 0.7), 205 - 40 * Math.sin(t * 0.7), 0];
+        if (mode === "tq") return [380 + 230 * Math.sin(t * 0.5), 200 + 30 * Math.sin(t * 1.4), 0];
+        return [380 + 200 * Math.sin(t * 0.5), 200 + 25 * Math.cos(t * 0.9), 0.5 * Math.sin(t * 0.7)];
       }
-      function place(p, P) { var ca = Math.cos(P[2]), sa = Math.sin(P[2]); return [P[0] + p[0] * ca - p[1] * sa, P[1] + p[0] * sa + p[1] * ca]; }
+      function place(p, P) { var q = [p[0] - piv[0], p[1] - piv[1]], ca = Math.cos(P[2]), sa = Math.sin(P[2]); return [P[0] + q[0] * ca - q[1] * sa, P[1] + q[0] * sa + q[1] * ca]; }
       animer(function (t) {
         if (RM) t = 1;
         g.innerHTML = "";
         var P = pose(t), P2 = pose(t + 0.02);
-        if (mode === "ro") el(g, "circle", { cx: 380, cy: 170, r: 6, fill: "#fff", stroke: "#1C2530", "stroke-width": 2 });
+
         pts.forEach(function (p, i) {
           var a = place(p, P); traces[i].push(a); if (traces[i].length > 420) traces[i].shift();
           if (traces[i].length > 1) el(g, "polyline", { points: traces[i].map(function (x) { return x[0].toFixed(1) + "," + x[1].toFixed(1); }).join(" "), fill: "none", stroke: cols[i], "stroke-width": 1.6 });
         });
         el(g, "polygon", { points: forme.map(function (p) { var a = place(p, P); return a[0].toFixed(1) + "," + a[1].toFixed(1); }).join(" "), fill: "#8E979F", stroke: "#1C2530", "stroke-width": 2, opacity: 0.9 });
+        var h = place(piv, P);
+        el(g, "circle", { cx: h[0], cy: h[1], r: 7, fill: "#fff", stroke: "#1C2530", "stroke-width": 2 });
+        if (mode === "ro") { el(g, "line", { x1: h[0] - 14, y1: h[1] + 16, x2: h[0] + 14, y2: h[1] + 16, stroke: "#1C2530", "stroke-width": 2 }); el(g, "line", { x1: h[0], y1: h[1] + 7, x2: h[0], y2: h[1] + 16, stroke: "#1C2530", "stroke-width": 2 }); }
         pts.forEach(function (p, i) {
           var a = place(p, P), b = place(p, P2), vx = (b[0] - a[0]) * 22, vy = (b[1] - a[1]) * 22;
           el(g, "circle", { cx: a[0], cy: a[1], r: 4, fill: cols[i], stroke: "#fff" });

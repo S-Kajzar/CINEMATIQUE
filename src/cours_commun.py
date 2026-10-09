@@ -180,7 +180,7 @@ body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
 .cours-sec .part-body h3{font:700 1.12rem var(--f-titre); margin:18px 0 6px; color:var(--bleu)}
 .cours-sec .part-body h4{font:700 1rem var(--f-titre); margin:14px 0 4px}
 .formule{display:flex; flex-wrap:wrap; gap:14px 28px; align-items:center; border:2px solid var(--rouge); background:#fff; padding:10px 18px; margin:12px 0; max-width:720px}
-.formule .f-main{font:700 1.35rem var(--f-titre); line-height:2}
+.formule .f-main{font:700 1.3rem var(--f-texte); line-height:2}
 .formule .f-units{font-size:.9rem; color:var(--encre-2)}
 .def{border-left:6px solid var(--rouge); background:#fff; padding:8px 14px; margin:12px 0; max-width:86ch}
 .def p{margin:.25rem 0}
@@ -188,7 +188,9 @@ body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
 .simu h3{margin:0 0 8px!important; font:700 1.15rem var(--f-titre); color:var(--bleu)!important}
 .simu-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px 18px}
 @media (max-width:760px){ .simu-grid{grid-template-columns:1fr} }
-.simu-grid label{display:flex; flex-direction:column; gap:4px; font-weight:600; font-size:.92rem}
+.simu-grid label{display:block; font-weight:600; font-size:.92rem}
+.simu-grid label output{margin-left:6px}
+.simu-grid label input[type=range],.simu-grid label select{display:block; margin-top:4px}
 .simu-grid output{font:700 1rem var(--f-titre); color:var(--bleu)}
 .simu-grid input[type=range]{width:100%; accent-color:var(--bleu)}
 .simu-grid select{padding:5px; border:1.5px solid var(--encre-2); background:#fff; font:inherit}
@@ -219,7 +221,7 @@ body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
 #qz-stars{color:var(--jaune); font-size:1.6rem; letter-spacing:2px}
 .jeu{border:2px solid var(--encre); background:#fff; padding:10px 14px; margin:12px 0 0}
 .jeu-l{display:flex; flex-wrap:wrap; gap:6px 8px; align-items:center; padding:6px 0; border-top:1px solid var(--trait-fin)}
-.jeu-l>span{flex:1 1 240px; font-weight:600}
+.jeu-l>span{flex:1 1 170px; font-weight:600}
 .jeu-l .btn{padding:4px 9px; font-size:.88rem}
 .jeu-l .btn.pick-ok{background:var(--vert); border-color:var(--vert); color:#fff}
 .jeu-l .btn.pick-ko{background:var(--rouge); border-color:var(--rouge); color:#fff}

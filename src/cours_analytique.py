@@ -140,7 +140,7 @@ identiques, de direction celle du mouvement, et leurs vecteurs accélération au
 <p>Le solide (S1) tourne autour de O par rapport à R0. Son point M décrit un cercle de centre O et de rayon r = OM ; sa
 position est repérée par l'angle θ, qui varie au cours du temps : {OM} = (r cos θ)·<span class=vec>x</span> + (r sin θ)·<span class=vec>y</span>.</p>
 <div class="cours-split"><div>
-{formule("ω = dθ/dt", "vitesse angulaire, en rad/s (ω = θ / t si elle est constante)")}
+{formule("ω = dθ/dt", "vitesse angulaire, en rad/s ; ω = θ / t si elle est constante et si θ = 0 à t = 0")}
 {formule("ω = 2π·N / 60", "N en tr/min")}
 </div><div>
 {formule("V = r·ω", "V en m/s, r en m, ω en rad/s")}
@@ -335,8 +335,11 @@ JS = r"""
         el(g, "circle", { cx: xp, cy: 118, r: 6, fill: "#B42318" });
         el(g, "line", { x1: xp, y1: 124, x2: xp, y2: 142, stroke: "#B42318", "stroke-width": 3 });
         el(g, "text", { x: xp + 8, y: 112, "font-size": 15, "font-weight": 700, fill: "#B42318" }, "2");
-        if (trace.length < 400) trace.push(xp); else trace.shift(), trace.push(xp);
-        if (vue === 0 && marche !== 0) el(g, "text", { x: 12, y: 30, "font-size": 14, fill: "#1F5FA8" }, "Depuis le quai, le voyageur avance avec le train.");
+        // trajectoire du voyageur dans le repère d'observation : ses positions successives à l'écran
+        if (trace.length && Math.abs(xp - trace[trace.length - 1]) > 40) trace = [];
+        trace.push(xp); if (trace.length > 600) trace.shift();
+        if (trace.length > 1) el(g, "line", { x1: Math.min.apply(null, trace), y1: 148, x2: Math.max.apply(null, trace), y2: 148, stroke: "#B42318", "stroke-width": 2.5, "stroke-dasharray": "6 4" });
+        el(g, "text", { x: 12, y: 30, "font-size": 14, fill: "#B42318" }, "En rouge, en pointillés : la trajectoire du voyageur (2) dans ce repère.");
         el(g, "text", { x: 12, y: 50, "font-size": 14, fill: "#46525C" }, vue === 0 ? "Repère R0 lié à la voie (0)" : "Repère R1 lié au wagon (1) : c'est la voie qui défile");
         el(g, "text", { x: 700, y: 200, "font-size": 15, "font-weight": 700, "text-anchor": "end" }, "0");
         var v20 = V10 + marche * V21, v21 = marche * V21;
