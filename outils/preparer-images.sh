@@ -49,4 +49,13 @@ done
 for b in photo-arbre photo-vtt; do
   convert "$ORIG/$b.png" -resize '720x720>' -quality 80 -strip "$OUT/$b.jpg"
 done
-ls -l "$OUT" | grep -E "fond-|photo-"
+# vignettes des cartes de l'accueil (480 × 270) et montage d'illustration, à partir des captures d'outils/captures.js
+for f in "$ORIG"/carte-*.png; do
+  [ -e "$f" ] || continue
+  convert "$f" -resize '480x270^' -gravity center -extent 480x270 -colors 128 -strip "PNG8:$OUT/$(basename "$f")"
+done
+if [ -e "$ORIG/accueil-1.png" ]; then
+  montage "$ORIG"/accueil-[1-4].png -tile 2x2 -geometry 400x225+4+4 -background white miff:- |
+    convert - -trim -bordercolor white -border 6 -colors 128 -strip "PNG8:$OUT/accueil.png"
+fi
+ls -l "$OUT" | grep -E "fond-|photo-|carte-|accueil"

@@ -120,11 +120,17 @@
     var r = 3.6 / k;
     return svgLigne([p[0] - r, p[1] - r], [p[0] + r, p[1] + r], c, w || 1.8) + svgLigne([p[0] - r, p[1] + r], [p[0] + r, p[1] - r], c, w || 1.8);
   }
-  /* étiquette d'un vecteur : au milieu, décalée du côté gauche du sens de parcours */
-  function posEtiquette(a, b, k) {
-    var u = unit(sub(b, a)), m = mul(add(a, b), 0.5), n = perp(u);
-    if (n[1] > 0) n = mul(n, -1);
-    return add(m, mul(n, 9 / k));
+  /* étiquette d'un vecteur : au milieu, décalée de côté — de préférence au-dessus (ou à droite d'un vecteur presque
+     vertical), et du côté qui reste dans la feuille (W, H) */
+  function posEtiquette(a, b, k, W, H) {
+    var u = unit(sub(b, a)), m = mul(add(a, b), 0.5), n = perp(u), d = 9 / k, lg = 50 / k;
+    if (Math.abs(n[1]) > 0.35 ? n[1] > 0 : n[0] < 0) n = mul(n, -1);
+    var p = add(m, mul(n, d));
+    if (W && (p[0] - lg < 0 || p[0] + lg > W || p[1] < 4 / k || p[1] > H)) {
+      var q = sub(m, mul(n, d));
+      if (q[0] - lg >= 0 && q[0] + lg <= W && q[1] >= 4 / k && q[1] <= H) p = q;
+    }
+    return p;
   }
 
   // =====================================================================================================
@@ -600,7 +606,7 @@
       else if (o.t === "sg") s += svgLigne(o.a, o.b, c, o.pointille ? 1.3 : w, cls, o.pointille ? "5 4" : "");
       else if (o.t === "ve") {
         s += svgFleche(o.a, o.b, c, choisi ? 3.6 : 2.6, k, cls);
-        if (o.nom) s += svgTexte(posEtiquette(o.a, o.b, k), o.nom, c, k, 14, "", "middle");
+        if (o.nom) s += svgTexte(posEtiquette(o.a, o.b, k, self.W, self.H), o.nom, c, k, 14, "", "middle");
       } else if (o.t === "ci") s += '<circle cx="' + n2(o.c[0]) + '" cy="' + n2(o.c[1]) + '" r="' + n2(o.r) + '" fill="none" stroke="' + c + '" stroke-width="' + (choisi ? 2.6 : 1.2) + '" class="' + cls + '"/>';
       else if (o.t === "pt") { s += svgCroix(o.p, c, k, choisi ? 2.6 : 1.8); if (o.nom) s += svgTexte([o.p[0] + m, o.p[1] - m], o.nom, c, k, 14); }
       else if (o.t === "tx") s += svgTexte(o.p, o.s, c, k, 15, choisi ? "at-choisi" : "");
@@ -613,10 +619,10 @@
     this.rendreTmp();
   };
   P.svgCorrection = function (prims, k) {
-    var s = "", X0 = -this.W, Y0 = -this.H, X1 = 2 * this.W, Y1 = 2 * this.H;
+    var s = "", W = this.W, H = this.H, X0 = -W, Y0 = -H, X1 = 2 * W, Y1 = 2 * H;
     prims.forEach(function (q) {
       var aide = q.st === "aide", c = aide ? ORANGE : ROUGE, dash = aide ? "6 4" : "";
-      if (q.t === "ve") { s += svgFleche(q.a, q.b, c, aide ? 1.8 : 2.8, k, "at-c"); if (q.lab) s += svgTexte(posEtiquette(q.a, q.b, k), q.lab, c, k, 14, "at-c", "middle"); }
+      if (q.t === "ve") { s += svgFleche(q.a, q.b, c, aide ? 1.8 : 2.8, k, "at-c"); if (q.lab) s += svgTexte(posEtiquette(q.a, q.b, k, W, H), q.lab, c, k, 14, "at-c", "middle"); }
       else if (q.t === "dr") { var g = clipLigne(q.p, unit(q.d), X0, Y0, X1, Y1); if (g) s += svgLigne(g[0], g[1], c, 1.3, "at-c", dash || "8 3 2 3"); }
       else if (q.t === "sg") s += svgLigne(q.a, q.b, c, aide ? 1.4 : 2.4, "at-c", dash);
       else if (q.t === "ci") s += '<circle cx="' + n2(q.c[0]) + '" cy="' + n2(q.c[1]) + '" r="' + n2(q.r) + '" fill="none" stroke="' + c + '" stroke-width="1.4" stroke-dasharray="' + (dash || "") + '" class="at-c"/>';

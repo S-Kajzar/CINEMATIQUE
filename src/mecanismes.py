@@ -50,8 +50,9 @@ def arbre():
     F.point("A", A, (3.4, -3.6), marque=True)
     F.point("B", B, (3.4, 3.6), marque=True)
     F.point("C", C, (-3.8, -3.6), marque=True)
-    F.texte(g.add(O, (-47, -48)), "Roue (4) : Ø 100 mm", "note", 3.2, "start")
-    F.texte(g.add(O, (-21, -29)), "Roue (1) : Ø 50 mm", "note", 3.2, "start")
+    F.texte(g.add(O, (-74, 56)), "Roue (4) : Ø 100 mm", "note", 3.2, "start")
+    F.trait(g.add(O, (-50, 54)), g.add(O, g.polar(50, 228)), "fin")
+    F.texte(g.add(O, (8, 31)), "Roue (1) : Ø 50 mm", "note", 3.2, "start")
     F.fleche_arc(O, 58, 145, 118)
     F.texte(g.add(O, g.polar(63, 150)), "N = 1 000 tr/min", "note", 3.2, "end")
     F.echelle((96, 143), 10, "Échelle des vitesses : 10 mm pour 1 m/s")
@@ -119,7 +120,7 @@ def embiellage():
     F.fleche_arc(A, 31, 205, 245)
     F.texte(g.add(A, g.polar(36, 228)), "N1/0", "lab", 3.4, "end")
     F.texte((6, 128), "N1/0 = 7 500 tr/min · AB = 39 mm · dessin à l'échelle 1:2", "note", 3, "start")
-    F.echelle((112, 128), 10, "Échelle des vitesses : 10 mm pour 5 m/s")
+    F.echelle((104, 128), 10, "Échelle des vitesses : 10 mm pour 5 m/s")
     s = 2.0                                    # mm par m/s
     w = 7500 * 2 * math.pi / 60
     vb = w * 0.039
@@ -131,7 +132,7 @@ def embiellage():
 
 # ====================================================================== 2.3 — Pompe à pétrole brut (1:40)
 def pompe():
-    F = Feuille(185, 142, "Document réponse — pompe à pétrole")
+    F = Feuille(185, 150, "Document réponse — pompe à pétrole")
     k = 1 / 40
     D = (82.0, 50.0)
 
@@ -175,10 +176,10 @@ def pompe():
     F.point("N", N, (2.4, -3.2), marque=True)
     F.point("M", Mp, (3.6, 1.5), marque=True)
     F.numero(g.add(A, (-9, 9)), "1", g.add(A, g.mul(g.sub(B, A), 0.5)))
-    F.numero(g.add(B, (-30, -30)), "2", g.add(B, g.mul(g.sub(C, B), 0.42)))
+    F.numero(g.add(B, (-18, -34)), "2", g.add(B, g.mul(g.sub(C, B), 0.42)))
     F.numero(g.add(D, (-22, 12)), "3", g.add(D, g.mul(g.sub(C, D), 0.45)))
     F.numero((E[0] - 12, yb - 22), "4", (E[0], yb - 26))
-    F.numero((E[0] - 12, yb + 6), "5", (E[0] - 4.4, yb + 4))
+    F.numero((E[0] - 14, yb + 2), "5", (E[0] - 6.5, yb + 3))
     F.numero(g.add(D, (14, 8)), "0", g.add(D, (8, 3)))
     F.fleche_arc(A, 8, 150, 95, 1.8)
     F.texte(g.add(A, (-7, -10)), "N1/0", "lab", 3.2, "end")
@@ -187,7 +188,7 @@ def pompe():
     F.texte(g.add(D, (-5, -13)), "N3/0", "lab", 3.2, "end")
     F.texte((5, 5), "AB = 570 mm · BC = 2 640 mm · CD = 2 310 mm · DE = 3 400 mm", "note", 3, "start")
     F.texte((5, 10), "Dessin à l'échelle 1:40 · N1/0 = 15 tr/min (sens horaire)", "note", 3, "start")
-    F.echelle((100, 137), 10, "Échelle des vitesses : 10 mm pour 0,2 m/s")
+    F.echelle((96, 145), 10, "Échelle des vitesses : 10 mm pour 0,2 m/s")
     s = 50.0                                   # mm par m/s
     w1 = 15 * 2 * math.pi / 60
     vb = w1 * 0.570
@@ -338,11 +339,12 @@ def portail():
 def bobcat():
     src, wpx, hpx = png("fond-bobcat")
     W, H = wpx * 2 / PX, hpx * 2 / PX          # fond réduit de moitié par outils/preparer-images.sh
-    F = Feuille(round(W, 2), round(H, 2), "Document réponse — chargeur Bobcat S185")
-    F.image(src, 0, 0, W, H)
+    mh = 28.0                                  # marge au-dessus du dessin : V(H∈1/0) est long
+    F = Feuille(round(W, 2), round(H + mh, 2), "Document réponse — chargeur Bobcat S185")
+    F.image(src, 0, mh, W, H)
     pts = dict(A=(1900, 2408), B=(1935, 2116), C=(1682, 2231), D=(1832, 2848), E=(1497, 2316), F=(1048, 2629),
                H=(629, 1967))
-    P = {k: page(v, 230, 280) for k, v in pts.items()}
+    P = {k: g.add(page(v, 230, 280), (0, mh)) for k, v in pts.items()}
     for k, p in P.items():
         F.point(k, p, None, marque=True)
     F.axe(P["D"], g.sub(P["C"], P["D"]), -6, g.dist(P["D"], P["C"]) + 12)
@@ -371,9 +373,10 @@ def vtt():
     for i, (fond, x0, y1, pts, s, ech) in enumerate(releves):
         src, wpx, hpx = png(fond)
         W, H = wpx * 2 / PX, hpx * 2 / PX
-        F = Feuille(round(W, 2), round(H, 2), f"Document réponse {i + 1} — suspension du VTT")
-        F.image(src, 0, 0, W, H)
-        P = {k: page_qt(v, x0, y1) for k, v in pts.items()}
+        ml = 16.0 if i == 0 else 0.0           # marge à gauche : le point G est au bord du premier dessin
+        F = Feuille(round(W + ml, 2), round(H, 2), f"Document réponse {i + 1} — suspension du VTT")
+        F.image(src, ml, 0, W, H)
+        P = {k: g.add(page_qt(v, x0, y1), (ml, 0)) for k, v in pts.items()}
         for k, p in P.items():
             F.point(k, p, None, marque=True)
         F.echelle((6, H - 5), 10, "Échelle des vitesses : " + ech)
