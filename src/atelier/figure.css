@@ -1,0 +1,20 @@
+/* Figures des feuilles (unités : mm de feuille). Repris tel quel par la fenêtre « Imprimer le DR vierge ». */
+.at-fig .tr,.at-fig .fin,.at-fig .axe,.at-fig .piece,.at-fig .pivot,.at-fig .hach,.at-fig .fl,.at-fig .tire,.at-fig .cadre{vector-effect:non-scaling-stroke}
+.at-fig .tr{stroke:#1C2530; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round}
+.at-fig .fin{stroke:#1C2530; stroke-width:1.1; fill:none}
+.at-fig .axe{stroke:#5A6670; stroke-width:.9; stroke-dasharray:9 3 2 3; fill:none}
+.at-fig .tire{stroke:#5A6670; stroke-width:1; stroke-dasharray:5 3; fill:none}
+.at-fig .piece{stroke:#1C2530; stroke-width:1.6; fill:#E9EDF1}
+.at-fig .piece2{stroke:#1C2530; stroke-width:1.6; fill:#F7EFD9; vector-effect:non-scaling-stroke}
+.at-fig .pivot{stroke:#1C2530; stroke-width:1.6; fill:#fff}
+.at-fig .hach{stroke:#1C2530; stroke-width:1}
+.at-fig .fl{stroke:#1C2530; stroke-width:1.3; fill:none}
+.at-fig .flp{fill:#1C2530}
+.at-fig .cadre{stroke:#A5ADAA; stroke-width:1; fill:none}
+.at-fig .pt{fill:#1F5FA8; opacity:.75}
+.at-fig text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; fill:#1C2530; paint-order:stroke; stroke:#fff; stroke-width:.6; stroke-linejoin:round}
+.at-fig .lab{font-weight:700; font-style:italic}
+.at-fig .num{font-weight:700}
+.at-fig .num-c{fill:#fff; stroke:#1C2530; stroke-width:.25}
+.at-fig .note{font-weight:500}
+.at-fig .ech{font-weight:600}

@@ -1,0 +1,109 @@
+/* ==================== ATELIER DE CONSTRUCTION GRAPHIQUE ==================== */
+/* zone de travail d'une partie : la feuille (collée en haut de l'écran) et les questions à côté */
+body.exo-atelier .page{max-width:1500px}
+@media (min-width:761px){ body.exo-atelier .page{padding-right:calc(var(--rail) + 12px)} }
+.at-zone{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr); gap:18px; align-items:start; margin:14px 0 6px}
+.at-zone>.atelier{position:sticky; top:8px}
+.at-zone>.at-questions{min-width:0}
+.at-questions>.q:first-child,.at-questions>.fast-q:first-child{margin-top:0}
+@media (max-width:1060px){ .at-zone{grid-template-columns:minmax(0,1fr)} .at-zone>.atelier{position:static} }
+/* plein écran : la feuille et les questions occupent tout l'écran */
+.at-zone.plein{position:fixed; inset:0; z-index:60; margin:0; padding:8px; background:var(--beton); grid-template-columns:minmax(0,1fr) min(400px,34vw); gap:10px}
+.at-zone.plein>.atelier{position:static; height:calc(100vh - 16px); display:flex; flex-direction:column}
+.at-zone.plein .at-stage{flex:1; height:auto; min-height:0}
+.at-zone.plein>.at-questions{height:calc(100vh - 16px); overflow:auto; background:var(--papier); padding:8px 12px; border:1px solid var(--trait)}
+body.at-plein-ouvert{overflow:hidden}
+body.at-plein-ouvert .banner,body.at-plein-ouvert .rail{display:none}
+@media (max-width:760px){ .at-zone.plein{grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) 34vh} .at-zone.plein>.atelier,.at-zone.plein>.at-questions{height:auto; min-height:0} }
+
+.atelier{background:var(--papier); border:1.5px solid var(--encre); display:flex; flex-direction:column}
+.at-bar{display:flex; flex-wrap:wrap; gap:3px 6px; align-items:center; padding:5px 6px; background:#EEF1F4; border-bottom:1px solid var(--trait)}
+.at-grp{display:inline-flex; flex-wrap:wrap; gap:3px; align-items:center}
+.at-grp+.at-grp{padding-left:6px; border-left:1px solid var(--trait)}
+.at-bar button{display:inline-flex; align-items:center; gap:4px; border:1px solid var(--trait); background:#fff; color:var(--encre); padding:3px 7px; font:600 .8rem/1.2 var(--f-texte); cursor:pointer; border-radius:2px}
+.at-bar button svg{width:17px; height:17px; flex:0 0 auto; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.at-bar button:hover:not(:disabled){background:var(--jaune-pale)}
+.at-bar button[aria-pressed="true"]{background:var(--bleu); border-color:var(--bleu); color:#fff}
+.at-bar button[data-outil="gomme"][aria-pressed="true"]{background:var(--rouge); border-color:var(--rouge)}
+.at-bar button[data-act="correction"][aria-pressed="true"]{background:#C62828; border-color:#C62828}
+.at-bar button:disabled{opacity:.45; cursor:not-allowed}
+.at-bar button.arme{background:var(--rouge); border-color:var(--rouge); color:#fff}
+.at-bar .at-sw{width:22px; height:22px; padding:0; border-radius:50%; border:2px solid #fff; outline:1px solid var(--trait)}
+.at-bar .at-sw[aria-pressed="true"]{outline:2px solid var(--encre)}
+.at-bar .at-zoom{font:600 .78rem var(--f-titre); min-width:3.4em; text-align:center}
+.at-stage{position:relative; height:min(68vh,660px); min-height:300px; background:#DADDD8; overflow:hidden}
+.at-svg{display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; font-family:var(--f-texte); user-select:none; -webkit-user-select:none}
+.at-svg:focus{outline:none}
+.at-svg:focus-visible{outline:3px solid var(--bleu); outline-offset:-3px}
+.atelier[data-outil-actif="main"] .at-svg{cursor:grab}
+.atelier[data-outil-actif="gomme"] .at-svg{cursor:cell}
+.at-papier{fill:#fff; stroke:#A5ADAA; stroke-width:.4}
+.at-grille line{vector-effect:non-scaling-stroke; stroke-width:1}
+.at-grille .g5{stroke:#EEF1F6} .at-grille .g10{stroke:#D5DEEA}
+.at-cons line,.at-cons circle,.at-corr line,.at-corr circle,.at-tmp line,.at-tmp circle{vector-effect:non-scaling-stroke}
+.at-lab{font-weight:700; paint-order:stroke; stroke:#fff; stroke-linejoin:round}
+.at-c.at-lab{font-style:italic}
+.at-apercu{opacity:.85}
+.at-surligne{opacity:.55; stroke-linecap:round}
+.at-accroche{fill:none; stroke-width:2; vector-effect:non-scaling-stroke}
+.at-accroche.at-point{stroke:#B26A00; fill:rgba(242,183,5,.25)}
+.at-accroche.at-intersection{stroke:#7B3FA0; fill:rgba(123,63,160,.15)}
+.at-accroche.at-sur{stroke:#1B7A43; fill:none; stroke-dasharray:3 2}
+.at-corr{opacity:.92}
+.at-info{display:flex; flex-wrap:wrap; gap:4px 14px; padding:5px 10px; min-height:2.1em; font-size:.86rem; border-top:1px solid var(--trait-fin); background:#FAFAF8}
+.at-aide{color:var(--encre-2)}
+.at-mesure{font-weight:700; color:var(--bleu)}
+.at-prop{display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; padding:6px 10px; border-top:1px dashed var(--trait); background:var(--jaune-pale); font-size:.88rem}
+.at-prop[hidden]{display:none}
+.at-p-type{font-weight:700}
+.at-prop label{display:inline-flex; align-items:center; gap:5px; font-weight:600}
+.at-prop label[hidden]{display:none}
+.at-prop input{border:1.5px solid var(--encre-2); padding:3px 6px; font:inherit; background:#fff; border-radius:2px}
+.at-p-nom{width:9.5em} .at-p-long{width:5.5em}
+.at-prop button{border:1px solid var(--rouge); color:var(--rouge); background:#fff; padding:3px 9px; cursor:pointer; font:600 .84rem var(--f-texte); border-radius:2px}
+.at-texte{position:absolute; z-index:3; min-width:110px; font:700 15px var(--f-texte); border:1.5px solid var(--bleu); padding:2px 5px; background:#fff}
+.at-legende{font-size:.82rem; color:var(--encre-2); padding:4px 10px 6px; margin:0}
+
+/* questions de construction : chaque élément attendu sur la feuille, son état, puis son verdict */
+.trace{border-left-color:var(--bleu)}
+.trace-items{list-style:none; margin:6px 0 4px; padding:0; display:grid; gap:4px; max-width:760px}
+.trace-items .it{display:grid; grid-template-columns:auto 1fr auto; gap:2px 10px; align-items:center; padding:5px 9px; background:#F6F8FB; border:1px solid var(--trait-fin); border-left:4px solid var(--trait)}
+.trace-items .it.present{border-left-color:var(--bleu)}
+.trace-items .sol{display:inline-flex; align-items:center; gap:4px; min-width:1.2em}
+.trace-items .sol .mark{font-size:.8rem; font-weight:700; white-space:nowrap}
+.trace-items .sol.is-ok .mark{color:var(--vert)} .trace-items .sol.is-ko .mark{color:var(--rouge)}
+.trace-items .it:has(.sol.is-ok){border-left-color:var(--vert); background:var(--vert-pale)}
+.trace-items .it:has(.sol.is-ko){border-left-color:var(--rouge); background:var(--rouge-pale)}
+.it-lab{font-size:.93rem}
+.it-etat{font-size:.78rem; font-weight:700; color:var(--encre-2); white-space:nowrap}
+.it.present .it-etat{color:var(--bleu)}
+.it.corrige .it-etat{display:none}
+.it-diag{grid-column:2/-1; font-size:.82rem; color:var(--rouge)}
+.it-diag:empty{display:none}
+.btn-trace{background:var(--bleu); border-color:var(--bleu)}
+.btn-trace:hover:not(:disabled){background:#17508F}
+
+/* démonstration pas à pas (cours) */
+.at-demo{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(260px,1fr); gap:14px; border:2px solid var(--bleu); background:#fff; padding:10px; margin:12px 0}
+@media (max-width:860px){ .at-demo{grid-template-columns:1fr} }
+.at-demo .at-stage{height:auto; aspect-ratio:var(--ar, 4/3); min-height:0; background:#fff; border:1px solid var(--trait-fin)}
+.at-demo .at-svg{cursor:default; touch-action:auto}
+.dm-side{display:flex; flex-direction:column; gap:8px}
+.dm-nav{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+.dm-num{font:700 .95rem var(--f-titre); color:var(--bleu); margin-right:auto}
+.dm-titre{font:700 1.05rem var(--f-titre); margin:0}
+.dm-texte{margin:0; font-size:.94rem}
+.dm-liste{margin:0; padding-left:1.3rem; font-size:.88rem; color:var(--encre-2)}
+.dm-liste li{margin:.15rem 0}
+.dm-liste li.fait{color:var(--encre)}
+.dm-liste li.en-cours{color:#C62828; font-weight:700}
+
+@media print{
+  .at-zone{display:block}
+  .at-zone>.atelier{position:static; break-inside:avoid; margin:0 0 4mm}
+  .at-bar,.at-info,.at-prop,.btn-trace,.dm-nav{display:none!important}
+  .at-stage{height:auto; aspect-ratio:var(--ar, 4/3); background:#fff; border:1px solid #999}
+  .at-tmp{display:none}
+  body:not(.corrections-open) .at-corr{display:none}
+  .it-etat{display:none}
+}
