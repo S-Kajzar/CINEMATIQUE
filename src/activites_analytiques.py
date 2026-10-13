@@ -11,7 +11,7 @@ import html
 import math
 import types
 
-from activites import ETQ, HTML, NUM, Q, TRACE, donnees, fr
+from activites import ETQ, NUM, Q, TRACE, donnees
 from atelier import C_COURBE, C_SG, IT_COURBE, Feuille
 
 PI = math.pi
@@ -134,7 +134,7 @@ def imprimante():
     it3 = trois(TF2, TF3, f"phase 3 ({nb(TF2, 2)} ≤ t ≤ {nb(TF3, 2)} s)", 0)
 
     VB, GB = VEC("V", "B", "1/0"), VEC("Γ", "B", "1/0")
-    x_ = f'<span class="vec">x</span>'
+    x_ = '<span class="vec">x</span>'
     blocks = [
         CHAMPS("Q1", "Détermine la position de B aux instants t = 0, t = 1 s et t = 2 s.",
                tableau(["t (s)", "0", "1", "2"], [("x (mm)", "[[1]]", "[[2]]", "[[3]]")]),
@@ -411,9 +411,6 @@ def agv():
     TL = 200
     VL = V2 + A3 * (TL - T2)                        # 58,86 m/s
 
-    def a(t):
-        return A1 if t <= T1 else (A2 if t <= T2 else A3)
-
     def v(t):
         return A1 * t if t <= T1 else (A2 * t + V02 if t <= T2 else V2 + A3 * (t - T2))
 
@@ -422,9 +419,10 @@ def agv():
                   dx=1, dy=2, titre="Diagramme des accélérations")
     GV = F.graphe("v(t)", (22, 184), 0.3, 0.8, 450, 0, 110, (10, 50, 50), (5, 10, 20), "t", "v", "s", "m/s",
                   up="m/s²", dx=1, dy=1, titre="Diagramme des vitesses")
-    bornes = [(0, T1, "phase 1"), (T1, T2, "phase 2"), (T2, T3, "phase 3")]
-    ita = [IT_COURBE(GA, a, t0, t1, f"Accélérations, {lab}") for t0, t1, lab in bornes]
-    itv = [IT_COURBE(GV, v, t0, t1, f"Vitesses, {lab}") for t0, t1, lab in bornes]
+    bornes = [(0, T1, "phase 1", A1), (T1, T2, "phase 2", A2), (T2, T3, "phase 3", A3)]
+    # l'accélération est discontinue : chaque phase a sa valeur, jusqu'à ses bornes comprises
+    ita = [IT_COURBE(GA, lambda t, ap=ap: ap, t0, t1, f"Accélérations, {lab}") for t0, t1, lab, ap in bornes]
+    itv = [IT_COURBE(GV, v, t0, t1, f"Vitesses, {lab}") for t0, t1, lab, _a in bornes]
     AIRE = ["La distance parcourue", "L'accélération", "La durée de la phase", "La vitesse moyenne"]
     p1 = [
         CHAMPS("Q2 a)", "Convertis en m/s les vitesses atteintes aux différents instants.",
@@ -442,8 +440,8 @@ def agv():
         Q("Q3 a)", "Détermine la constante v<sub>02</sub> de la phase 2.",
           "Les équations de la phase 2 sont écrites dans le repère absolu (t = 0 au départ) ; à t = t<sub>1</sub>, "
           "la vitesse vaut 10 m/s. " + H_NUM, NUM(V02, "m/s", 0.01), "v<sub>02</sub> = 3 m/s",
-          f"<p>Le graphe des accélérations donne a<sub>2</sub> = 0,35 m/s². La vitesse est continue en t<sub>1</sub> : "
-          f"v(20) = 0,35 × 20 + v<sub>02</sub> = 10, d'où v<sub>02</sub> = 10 − 7 = <strong>3 m/s</strong>. "
+          "<p>Le graphe des accélérations donne a<sub>2</sub> = 0,35 m/s². La vitesse est continue en t<sub>1</sub> : "
+          "v(20) = 0,35 × 20 + v<sub>02</sub> = 10, d'où v<sub>02</sub> = 10 − 7 = <strong>3 m/s</strong>. "
           "(v<sub>02</sub> n'est pas une vitesse réellement atteinte : c'est l'ordonnée à l'origine de la droite "
           "des vitesses de la phase 2.)</p>"),
         Q("Q3 b)", "Détermine la constante x<sub>02</sub> de la phase 2.", "La position est continue en t<sub>1</sub>. " + H_NUM,
@@ -538,12 +536,6 @@ def moteur():
     W1, W3 = 10 * PI, -20 * PI           # 31,42 rad/s ; −62,83 rad/s
     N1 = W1 * 60 / (2 * PI)              # 300 tr/min
 
-    def th(t):
-        return W1 * t if t <= 2 else (20 * PI if t <= 10 else 20 * PI + W3 * (t - 10))
-
-    def w(t):
-        return W1 if t <= 2 else (0.0 if t <= 10 else W3)
-
     F = Feuille(186, 190, "Graphes du mouvement de rotation du moteur")
     GT = F.graphe("θ(t)", (24, 86), 12, 1, 12, 0, 70, (0.5, 1, 1), (5, 10, 10), "t", "θ", "s", "rad", up="rad/s",
                   dx=2, dy=2, titre="Espace angulaire (donné)")
@@ -552,9 +544,10 @@ def moteur():
     F.poly([GT.p(0, 0), GT.p(2, 20 * PI), GT.p(10, 20 * PI), GT.p(11, 0)], "crb")
     F.trait(GT.p(0, 20 * PI), GT.p(2, 20 * PI), "tire")
     F.texte(g_add(GT.p(6, 20 * PI), (0, -2.6)), "θ = 20π rad", "lab", 3.3)
-    itw = [IT_COURBE(GW, w, 0, 2, "Vitesse angulaire, phase 1 (0 < t < 2 s)"),
-           IT_COURBE(GW, w, 2, 10, "Vitesse angulaire, phase 2 (2 < t < 10 s)"),
-           IT_COURBE(GW, w, 10, 11, "Vitesse angulaire, phase 3 (10 < t < 11 s)")]
+    # ω est discontinue : chaque phase a sa valeur, jusqu'à ses bornes comprises
+    itw = [IT_COURBE(GW, lambda t: W1, 0, 2, "Vitesse angulaire, phase 1 (0 < t < 2 s)"),
+           IT_COURBE(GW, lambda t: 0.0, 2, 10, "Vitesse angulaire, phase 2 (2 < t < 10 s)"),
+           IT_COURBE(GW, lambda t: W3, 10, 11, "Vitesse angulaire, phase 3 (10 < t < 11 s)")]
     pi = "<i>π</i>"
     blocks = [
         Q("Q1.1 a)", "Détermine la vitesse angulaire ω<sub>1</sub> du moteur pendant la phase 1 (0 < t < 2 s).",
@@ -595,7 +588,7 @@ def moteur():
             "puis dans l'autre). Phase 2 : θ constant, le rotor est arrêté.</p>", titre="Natures"),
         Q("Q1.1 g)", "Calcule la fréquence de rotation N<sub>1</sub> du moteur pendant la phase 1, en tr/min.", H_NUM,
           NUM(N1, "tr/min", 0.01), "N<sub>1</sub> = 300 tr/min",
-          f"<p>N = 60 ω / 2π = 60 × 10π / 2π = <strong>300 tr/min</strong> ; en 2 s, le rotor fait 20π / 2π = 10 tours.</p>"),
+          "<p>N = 60 ω / 2π = 60 × 10π / 2π = <strong>300 tr/min</strong> ; en 2 s, le rotor fait 20π / 2π = 10 tours.</p>"),
         TRACE("Q1.2", "Trace le graphe des vitesses angulaires ω(t).", H_GR, itw,
               cor_courbes(itw, [C_SG(GW.p(2, 40), GW.p(2, -70), "aide"), C_SG(GW.p(10, 40), GW.p(10, -70), "aide")]),
               f"<p>Trois paliers : ω = 10π ≈ {nb(W1, 1)} rad/s de 0 à 2 s, ω = 0 de 2 à 10 s, ω = −20π ≈ {nb(W3, 1)} "

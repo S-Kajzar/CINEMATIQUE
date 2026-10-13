@@ -24,7 +24,7 @@ def render(A):
     sections = [("ca-referentiel", "Référentiel et mouvement"), ("ca-trajectoire", "Trajectoire d'un point"),
                 ("ca-vitesse", "Vitesse et accélération"), ("ca-analyse", "Analyse de mouvements"),
                 ("ca-mouvements", "Mouvements plans particuliers"), ("ca-solide", "Cinématique du solide"),
-                ("ca-composition", "Composition des mouvements"), ("ca-mru", "MRU"), ("ca-mruv", "MRUV"),
+                ("ca-composition", "Composition des mouvements"), ("ca-mru", "MRU"), ("ca-varie", "MRUV"),
                 ("ca-circulaire", "Mouvement circulaire"), ("ca-quiz", "Quiz")]
     s = []
     # ------------------------------------------------------------------ 1. référentiel
@@ -195,7 +195,7 @@ sans glisser : V(A, roue/route) = <span class=vec>0</span>, comme pour le vélo 
 """))
     # ------------------------------------------------------------------ 8 à 10. MRU, MRUV, mouvement circulaire
     s.append(course_section(8, "ca-mru", "Mouvement rectiligne uniforme (MRU)", cm.mru(A)))
-    s.append(course_section(9, "ca-mruv", "Mouvement rectiligne uniformément varié (MRUV)", cm.mruv(SIMU_MRUV)))
+    s.append(course_section(9, "ca-varie", "Mouvement rectiligne uniformément varié (MRUV)", cm.mruv(SIMU_MRUV)))
     essentiel = cartes([
         ("Référentiel", "Repère d'espace + repère de temps. Le mouvement dépend toujours du référentiel : on note Mvt 1/0."),
         ("Trajectoire", "Courbe décrite par un point dans un repère ; toujours préciser à quel solide le point appartient."),

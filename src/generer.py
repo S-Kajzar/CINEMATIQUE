@@ -140,7 +140,7 @@ def render_champs(b):
 
     def case(m):
         i = int(m[1]) - 1
-        fid, (fl, _g, _e) = b["fids"][i], b["fields"][i]
+        fid, fl = b["fids"][i], b["fields"][i][0]
         return (f'<span class="sol"><input type="text" class="ch-in" id="in-{fid}" data-q="{fid}" inputmode="decimal" '
                 f'autocomplete="off" spellcheck="false" aria-label="{esc(re.sub(r"<[^>]+>", "", fl))}">'
                 '<span class="mark" aria-live="polite"></span></span>')

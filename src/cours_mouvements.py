@@ -84,7 +84,7 @@ def schema(ident, panels, label, w=250, h=176):
         out.append(f'<text x="{x0 + pw / 2:.1f}" y="{h - 8}" font-size="13" font-weight="700" text-anchor="middle" '
                    f'fill="#1F5FA8">{p["titre"]}</text>')
     out.append("</svg>")
-    return f'<figure class="simu-fig ca-schema">{"".join(out)}</figure>'
+    return f'<figure class="simu-fig ca-schema" style="max-width:{W}px">{"".join(out)}</figure>'
 
 
 def parabole(a, b, c, n=24):
@@ -127,7 +127,7 @@ def graphe_mru4(A):
 
 
 # ====================================================================== 3. compléments : abscisse curviligne…
-FIG_ABS = """<figure class="simu-fig" style="max-width:420px"><svg viewBox="0 0 420 200" role="img" aria-label="Trajectoire orientée : origine A, point M, abscisse curviligne x, mesure de l'arc AM">
+FIG_ABS = """<figure class="simu-fig ca-fig" style="width:400px"><svg viewBox="0 0 420 200" role="img" aria-label="Trajectoire orientée : origine A, point M, abscisse curviligne x, mesure de l'arc AM">
 <defs><marker id="ca-ab-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 10,5 0,10z" fill="#1C2530"/></marker></defs>
 <path d="M30,160 C110,40 230,30 390,120" fill="none" stroke="#1C2530" stroke-width="2.5"/>
 <path d="M58,124 C120,48 190,42 252,58" fill="none" stroke="#B42318" stroke-width="6" opacity=".55"/>
@@ -136,19 +136,20 @@ FIG_ABS = """<figure class="simu-fig" style="max-width:420px"><svg viewBox="0 0 
 <g font-size="15" font-weight="700"><text x="34" y="122">A</text><text x="248" y="44">M</text><text x="146" y="40" fill="#B42318">x = arc AM</text>
 <text x="380" y="98">+</text><text x="300" y="150" font-weight="400" font-size="13">T(M∈S/R) orientée</text></g></svg></figure>"""
 
-FIG_FRENET = """<figure class="simu-fig" style="max-width:440px"><svg viewBox="0 0 440 250" role="img" aria-label="Repère local en M : vecteur t tangent, vecteur n normal vers l'extérieur ; accélération et ses composantes tangentielle et normale">
+FIG_FRENET = """<figure class="simu-fig ca-fig" style="width:420px"><svg viewBox="0 0 440 250" role="img" aria-label="Repère local en M : vecteur t tangent, vecteur n normal orienté vers l'extérieur ; accélération et ses composantes tangentielle et normale, dirigée vers le centre de courbure">
 <defs><marker id="ca-fr-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 10,5 0,10z" fill="context-stroke"/></marker></defs>
 <path d="M40,210 C90,70 260,40 410,120" fill="none" stroke="#1C2530" stroke-width="2.5"/>
-<line x1="210" y1="70" x2="285" y2="82" stroke="#1C2530" stroke-width="2.2" marker-end="url(#ca-fr-f)"/>
-<line x1="210" y1="70" x2="198" y2="0" stroke="#1C2530" stroke-width="2.2" marker-end="url(#ca-fr-f)" transform="translate(0 6)"/>
-<line x1="210" y1="70" x2="258" y2="78" stroke="#1B7A43" stroke-width="3.5" marker-end="url(#ca-fr-f)"/>
-<line x1="210" y1="70" x2="226" y2="164" stroke="#1B7A43" stroke-width="3.5" marker-end="url(#ca-fr-f)"/>
-<line x1="210" y1="70" x2="272" y2="172" stroke="#0B5A2E" stroke-width="2.5" marker-end="url(#ca-fr-f)"/>
-<line x1="210" y1="70" x2="232" y2="196" stroke="#7A848C" stroke-dasharray="4 3"/><circle cx="232" cy="196" r="3.5" fill="#7A848C"/>
-<circle cx="210" cy="70" r="5" fill="#1F5FA8"/>
-<g font-size="15" font-weight="700"><text x="194" y="94">M</text><text x="288" y="80">t</text><text x="182" y="14">n</text>
-<text x="246" y="100" fill="#1B7A43" font-size="13">Γt</text><text x="196" y="150" fill="#1B7A43" font-size="13">Γn</text>
-<text x="276" y="176" fill="#0B5A2E" font-size="14">Γ</text><text x="240" y="214" fill="#7A848C" font-size="13" font-weight="400">centre de courbure (R)</text></g>
+<line x1="208" y1="79" x2="225" y2="203" stroke="#7A848C" stroke-dasharray="4 3"/><circle cx="225" cy="203" r="3.5" fill="#7A848C"/>
+<line x1="208" y1="79" x2="282" y2="69" stroke="#1C2530" stroke-width="2.2" marker-end="url(#ca-fr-f)"/>
+<line x1="208" y1="79" x2="200" y2="20" stroke="#1C2530" stroke-width="2.2" marker-end="url(#ca-fr-f)"/>
+<line x1="208" y1="79" x2="252" y2="73" stroke="#1B7A43" stroke-width="4" marker-end="url(#ca-fr-f)"/>
+<line x1="208" y1="79" x2="219" y2="163" stroke="#1B7A43" stroke-width="4" marker-end="url(#ca-fr-f)"/>
+<line x1="252" y1="73" x2="264" y2="157" stroke="#1B7A43" stroke-dasharray="3 3"/><line x1="219" y1="163" x2="264" y2="157" stroke="#1B7A43" stroke-dasharray="3 3"/>
+<line x1="208" y1="79" x2="264" y2="157" stroke="#0B5A2E" stroke-width="2.6" marker-end="url(#ca-fr-f)"/>
+<circle cx="208" cy="79" r="5" fill="#1F5FA8"/>
+<g font-size="16" font-weight="700"><text x="186" y="74">M</text><text x="286" y="66">t</text><text x="184" y="22">n</text>
+<text x="236" y="64" fill="#1B7A43" font-size="14">Γt</text><text x="196" y="160" fill="#1B7A43" font-size="14">Γn</text>
+<text x="270" y="162" fill="#0B5A2E">Γ</text><text x="236" y="222" fill="#7A848C" font-size="13" font-weight="400">centre de courbure ; R = rayon</text></g>
 </svg></figure>"""
 
 
@@ -275,8 +276,8 @@ accélération, et calcule leurs composantes ; les exercices se vérifient seuls
 <label><span><input type="checkbox" class="ca-l-anim"> Animer</span></label>
 <label><span><input type="checkbox" class="ca-l-vec" checked> Vecteurs vitesse et accélération</span></label></div>
 <div class="simu-fig"><svg viewBox="0 0 760 330" role="img" aria-label="Trajectoire du point M, positions aux instants de l'énoncé, vecteurs vitesse et accélération"><g class="ca-l-monde"></g></svg></div>
-<div class="simu-out"><div><span>Position (x ; y)</span><b class="ca-l-p"></b></div><div><span>{V} (x' ; y')</span><b class="ca-l-v"></b></div>
-<div><span>‖{V}‖</span><b class="ca-l-nv"></b></div><div><span>{G} (x'' ; y'') ; ‖{G}‖</span><b class="ca-l-g"></b></div></div>
+<div class="simu-out"><div><span>Position (x ; y)</span><b class="ca-l-p"></b></div><div><span>Vitesse : (x' ; y')</span><b class="ca-l-v"></b></div>
+<div><span>Norme de la vitesse</span><b class="ca-l-nv"></b></div><div><span>Accélération : (x'' ; y'') ; norme</span><b class="ca-l-g"></b></div></div>
 <div class="ca-l-tab"></div>
 <p class="simu-note ca-l-obs"></p></div>
 <h3>Mouvement 1 : x = 3t + 1 ; y = 1 (mm, s)</h3>{"".join(m1)}
@@ -438,7 +439,7 @@ de la position et de la vitesse au début de la phase.</p></div></div>
 
 
 # ====================================================================== 10. mouvement circulaire
-FIG_MC = """<figure class="simu-fig" style="max-width:360px"><svg viewBox="0 0 360 250" role="img" aria-label="Trajectoire circulaire de centre O et de rayon R : origine L, point M, arc s et angle θ">
+FIG_MC = """<figure class="simu-fig ca-fig" style="width:340px"><svg viewBox="0 0 360 250" role="img" aria-label="Trajectoire circulaire de centre O et de rayon R : origine L, point M, arc s et angle θ">
 <defs><marker id="ca-mc-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 10,5 0,10z" fill="context-stroke"/></marker></defs>
 <line x1="40" y1="125" x2="320" y2="125" stroke="#A5ADAA"/><line x1="180" y1="235" x2="180" y2="12" stroke="#A5ADAA"/>
 <circle cx="180" cy="125" r="95" fill="none" stroke="#1C2530" stroke-width="2.4"/>
@@ -543,6 +544,7 @@ QUIZ = [
 
 CSS = """
 .ca-schema svg text{font-family:var(--f-texte)}
+.ca-fig{max-width:100%; flex:0 1 auto}
 .ca-acts{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px; margin:8px 0 12px}
 .ca-act{display:flex; flex-direction:column; gap:4px; padding:10px 14px; border:2px solid var(--encre); border-left:8px solid var(--vert); background:#fff; color:var(--encre); text-decoration:none}
 .ca-act:hover{background:var(--jaune-pale)}
