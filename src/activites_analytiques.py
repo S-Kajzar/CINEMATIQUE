@@ -605,7 +605,8 @@ def moteur():
             "mots": ["MCU", "Abscisse angulaire", "Vitesse angulaire", "Repère absolu"], "methode": "MCU",
             "sub": "Du graphe de l'espace angulaire aux équations de chaque phase, dans le repère de la phase puis "
                    "dans le repère absolu, et au graphe des vitesses angulaires.",
-            "hero": None, "dt": "ana",
+            "hero": ("photo-transmission", "Moteur électrique, réducteur et transmission par courroie vers un volant d'inertie",
+                     "Un moteur électrique et sa transmission (figure de la séquence)."), "dt": "ana",
             "parts": [{"title": "Mouvement de rotation du moteur", "minutes": 35, "intro": intro, "meca": feuille(F),
                        "noms": [], "blocks": blocks}]}
 

@@ -58,7 +58,7 @@ Une activité analytique se décrit dans `src/activites_analytiques.py`, avec `"
 (formulaire et consignes propres) : questions `Q` et `ETQ`, cases numériques `CHAMPS` insérées dans une équation ou un
 tableau, et, pour les graphes à compléter, une `Feuille` portant des `graphe(...)` et des éléments attendus
 `IT_COURBE` (portion de courbe y = f(t) entre deux instants, une fonction par phase). La carte apparaît d'elle-même sur
-l'accueil ; sa vignette vient de `outils/captures.js`.
+l'accueil ; sa vignette est composée à partir de l'image de l'activité (`carte` dans `outils/preparer-images.sh`).
 
 ## Régénérer la page
 
@@ -93,9 +93,9 @@ NODE_PATH=$(npm root -g) node --test tests/navigateur.test.js # accueil, cours, 
 | `src/activites_analytiques.py` | les quatre activités de cinématique analytique : énoncés, graphes, questions, corrections |
 | `src/cours_commun.py`, `src/cours_analytique.py`, `src/cours_mouvements.py`, `src/cours_graphique.py` | cours : éléments communs (quiz, jeux, cartes, exercices auto-corrigés), cours 1 (dont MRU, MRUV, mouvement circulaire et analyse de mouvements) et cours 2 (contenu, figures SVG, simulateurs) |
 | `src/medias.py` | images intégrées en data URI |
-| `src/images/originaux/` | fonds de documents réponses et photos extraits des séquences (300 dpi), captures des vignettes |
+| `src/images/originaux/` | fonds de documents réponses, photos et dessins extraits des séquences (300 dpi), captures des vignettes des cours |
 | `src/images/` | images réduites et quantifiées, intégrées dans la page |
-| `outils/preparer-images.sh` | extraction depuis les PDF des séquences, réduction, vignettes et montage d'accueil |
-| `outils/captures.js` | vignettes photographiées dans la page (Playwright) |
+| `outils/preparer-images.sh` | extraction depuis les PDF des séquences, réduction, vignettes des activités (leur image) et montage d'accueil |
+| `outils/captures.js` | vignettes des cours, de l'atelier et des études de cas, photographiées dans la page (Playwright) |
 | `tests/` | tests Node et Playwright |
 | `.github/workflows/static.yml` | publication GitHub Pages (déclenchée sur la branche `main`) |

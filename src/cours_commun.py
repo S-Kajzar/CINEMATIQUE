@@ -252,13 +252,13 @@ body.cours-page .home-inner{max-width:1100px}
 .cours-nav{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px}
 .cours-nav a{font:600 .92rem var(--f-titre); color:var(--encre); background:var(--papier); border:1.5px solid var(--encre); padding:5px 12px; text-decoration:none}
 .cours-nav a:hover{background:var(--jaune-pale)}
-body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
+body.cours-page .part-body p,body.cours-page .part-body ul,body.cours-page .part-body ol{max-width:none}
 .cours-sec .part-body h3{font:700 1.12rem var(--f-titre); margin:18px 0 6px; color:var(--bleu)}
 .cours-sec .part-body h4{font:700 1rem var(--f-titre); margin:14px 0 4px}
-.formule{display:flex; flex-wrap:wrap; gap:14px 28px; align-items:center; border:2px solid var(--rouge); background:#fff; padding:10px 18px; margin:12px 0; max-width:720px}
+.formule{display:flex; flex-wrap:wrap; gap:14px 28px; align-items:center; border:2px solid var(--rouge); background:#fff; padding:10px 18px; margin:12px 0}
 .formule .f-main{font:700 1.3rem var(--f-texte); line-height:2}
 .formule .f-units{font-size:.9rem; color:var(--encre-2)}
-.def{border-left:6px solid var(--rouge); background:#fff; padding:8px 14px; margin:12px 0; max-width:86ch}
+.def{border-left:6px solid var(--rouge); background:#fff; padding:8px 14px; margin:12px 0}
 .def p{margin:.25rem 0}
 .simu{border:2px solid var(--bleu); background:var(--bleu-pale); padding:12px 16px; margin:14px 0}
 .simu h3{margin:0 0 8px!important; font:700 1.15rem var(--f-titre); color:var(--bleu)!important}
@@ -281,7 +281,7 @@ body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
 .simu-note{font-size:.86rem; color:var(--encre-2); margin:4px 0 0}
 .exemple{background:#F6F7F4; border:1px solid var(--trait-fin); padding:6px 16px; margin-top:12px}
 .exemple h3{font:700 1.05rem var(--f-titre); margin:10px 0 4px}
-.remarque{border-left:6px solid var(--jaune); background:var(--jaune-pale); padding:8px 14px; margin:12px 0; max-width:86ch}
+.remarque{border-left:6px solid var(--jaune); background:var(--jaune-pale); padding:8px 14px; margin:12px 0}
 .remarque p{margin:.2rem 0}
 .quiz{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px}
 .quiz-q{border:1.5px solid var(--encre); background:#fff; padding:8px 14px 10px; margin:0}
@@ -316,7 +316,7 @@ body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
 .cours-foot{display:flex; flex-wrap:wrap; gap:10px; margin:6px 0 0}
 .cours-foot .small{align-self:center}
 table.t.cours-t td,table.t.cours-t th{vertical-align:middle}
-.exo-c{border:1.5px solid var(--encre); border-left:6px solid var(--bleu); background:#fff; padding:8px 14px 10px; margin:10px 0; max-width:880px}
+.exo-c{border:1.5px solid var(--encre); border-left:6px solid var(--bleu); background:#fff; padding:8px 14px 10px; margin:10px 0}
 .exo-c.is-ok{border-left-color:var(--vert)} .exo-c.is-ko{border-left-color:var(--rouge)}
 .exo-q{margin:0 0 4px; font-weight:600}
 .exo-aide{margin:0 0 4px; font-size:.88rem; color:var(--encre-2)}

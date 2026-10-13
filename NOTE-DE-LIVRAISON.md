@@ -17,13 +17,22 @@ l'atelier), le texte de la fenêtre « Imprimer les DR », le libellé « Diagra
 validées ») et le décompte « n case(s) juste(s) » (devenu « n réponse(s) juste(s) », qui convient aux étiquettes comme
 aux constructions).
 
-**Accueil** (`index.html`), sur le modèle de Chaîne fonctionnelle : en-tête et montage d'illustration (quatre feuilles
-corrigées : ellipsographe, embiellage, pompe, chargeur), puis les rubriques **Les cours** (Cours 1, pastille verte
+**Accueil** (`index.html`), sur le modèle de Chaîne fonctionnelle : en-tête et montage d'illustration (six systèmes
+étudiés : AGV, axe d'imprimante 3D, pompe à pétrole, VTT, vanne d'air, chargeur compact), puis les rubriques **Les cours** (Cours 1, pastille verte
 Analytique ; Cours 2, pastille bleue Graphique), **L'atelier de construction**, **Activités de cinématique
 analytique** (quatre cartes : activités 1.1 à 1.4), **Activités de résolution graphique** (sept cartes) et **Études
 de cas** (une carte « En cours d'édition »). La logique de numérotation reste celle des dépôts précédents : le premier
 chiffre d'une activité donne sa partie (1 analytique, 2 graphique). Toutes les cartes ont la même taille, une
-vignette photographiée dans la page (`outils/captures.js`), 3 à 5 mots-clés et un bouton (test navigateur).
+vignette, 3 à 5 mots-clés et un bouton (test navigateur). La vignette d'une activité est son image, entière sur fond
+blanc : la photo ou le dessin de présentation de la séquence ; l'ellipsographe, le portail et le chargeur n'ayant pas
+de photo dans la séquence, c'est leur dessin d'origine (traits épaissis), repris aussi en tête de leur activité ; le
+moteur électrique prend la figure du moteur et de sa transmission, placée sur la même page de la séquence. Les
+vignettes des cours, de l'atelier et des études de cas restent des figures photographiées dans la page
+(`outils/captures.js`).
+
+**Largeur du texte** : dans les cours comme dans les activités, le texte (énoncés, indications, données, corrections,
+définitions, formules, remarques, exercices, étiquettes) occupe toute la largeur de la zone blanche ; les largeurs de
+lecture du gabarit (72 à 80 caractères) sont levées par la feuille de style du contenu, sans modifier le gabarit.
 
 ## Le cours scindé : partie analytique, partie résolution graphique
 
@@ -208,7 +217,7 @@ une marge à gauche, pour que les vecteurs longs (V(H∈1/0), V(G∈S1/S0)) y ti
   reprise sans la ligne du logo placée sous la photo dans la séquence), le dessin de la vanne d'air et celui de la
   transmission viennent de la séquence analytique. Leur publication suppose d'en avoir le droit.
 - Les études de cas sont annoncées « En cours d'édition » : les documents fournis n'en contiennent pas.
-- Poids : `index.html` 2,8 Mio (1,9 Mio d'images).
+- Poids : `index.html` 3,1 Mio (2,2 Mio d'images).
 
 ## Vérifications effectuées
 
