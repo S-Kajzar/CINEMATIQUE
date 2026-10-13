@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """Génère la page « Cinématique » (index.html) : un accueil sur le modèle du dépôt « Chaîne fonctionnelle » (lui-même
 repris du dépôt « Résistance des matériaux »), deux cours interactifs (cinématique analytique, cinématique
-graphique), un atelier de construction libre et les activités de résolution graphique, chacun ouvert par ?ex=….
+graphique), un atelier de construction libre et les activités de cinématique analytique et de résolution graphique,
+chacun ouvert par ?ex=….
 
     python3 src/generer.py
 
@@ -958,7 +959,7 @@ def build():
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{TITRE} — cours et activités interactifs</title>
-<meta name="description" content="Cinématique : cours interactifs (cinématique analytique, cinématique graphique), atelier de construction et activités de résolution graphique (équiprojectivité, centre instantané de rotation, composition des vitesses).">
+<meta name="description" content="Cinématique : cours interactifs (cinématique analytique, cinématique graphique), atelier de construction, activités de cinématique analytique (MRU, MRUV, mouvement circulaire) et de résolution graphique (équiprojectivité, centre instantané de rotation, composition des vitesses).">
 {style}
 {css}
 <style>{atelier.CSS}</style>

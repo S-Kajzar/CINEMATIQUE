@@ -11,6 +11,7 @@ const URL = "file://" + FILE;
 const html = fs.readFileSync(FILE, "utf8");
 const EXOS = JSON.parse(html.match(/window\.__EXOS__ = (.*?);<\/script>/)[1]);
 const ACTS = Object.keys(EXOS);
+const ANA = ACTS.filter((k) => EXOS[k].consignes === "tpl-consignes-ana"), GRAPH = ACTS.filter((k) => !ANA.includes(k));
 let browser;
 
 test.before(async () => { browser = await chromium.launch(); });
@@ -67,6 +68,7 @@ async function poserSolution(page, id) {
       else if (it.k === "dir") a.objs.push({ t: "dr", p: it.o, d: it.d, c: "#1F5FA8" });
       else if (it.k === "pt") a.objs.push({ t: "pt", p: it.p, nom: it.nom, c: "#1F5FA8" });
       else if (it.k === "ci") a.objs.push({ t: "ci", c: it.c, r: it.r, c2: "" });
+      else if (it.k === "courbe") a.objs.push({ t: "pl", pts: it.pts, lisse: false, c: "#1F5FA8" });
     });
     a.changer();
   }, id);
@@ -77,7 +79,7 @@ async function repondreTout(page, key) {
   for (const [id, q] of Object.entries(qcfg)) {
     const g = q.grader;
     if ((g.type === "num" || g.type === "chasles") && await page.isDisabled(`#in-${id}`)) continue;
-    if (g.type === "num") await page.fill(`#in-${id}`, `${String(g.value).replace(".", ",")} ${g.unit.label}`);
+    if (g.type === "num") await page.fill(`#in-${id}`, `${String(g.value).replace(".", ",")}${g.unit ? " " + g.unit.label : ""}`);
     if (g.type === "chasles") {
       const s = Object.keys(g.solids);
       const rel = s.includes("s4") ? "V(C∈S4/S0) = V(C∈S4/S5) + V(C∈S5/S0)" : "V(C∈5/0) = V(C∈5/4) + V(C∈4/0)";
@@ -95,6 +97,14 @@ async function repondreTout(page, key) {
   }
 }
 
+// un point placé par ses coordonnées physiques, sous la feuille (graphes)
+async function placer(page, id, g, t, y) {
+  if (await page.locator(`#${id} .at-c-g`).count()) await page.selectOption(`#${id} .at-c-g`, String(g));
+  await page.fill(`#${id} .at-c-x`, String(t).replace(".", ","));
+  await page.fill(`#${id} .at-c-y`, String(y).replace(".", ","));
+  await page.click(`#${id} .at-coord [type=submit]`);
+}
+
 test("accueil : cartes illustrées (cours, atelier, activités analytiques et graphiques, études de cas)", async () => {
   const { context, page, errors } = await open("");
   assert.ok(await page.locator("body.hub").count());
@@ -107,21 +117,23 @@ test("accueil : cartes illustrées (cours, atelier, activités analytiques et gr
     ["Cours 1 Analytique", "Cinématique analytique", "?ex=cours-cinematique-analytique"],
     ["Cours 2 Graphique", "Cinématique graphique", "?ex=cours-cinematique-graphique"]]);
   assert.deepEqual(await card(".outil-grid .mode-card"), [["Atelier", "Atelier de construction libre", "?ex=atelier-libre"]]);
-  assert.deepEqual(await card(".analytique-grid .mode-card"), [["Activité 1.1 Analytique", "Cinématique du point", null]]);
-  assert.deepEqual((await card(".exo-grid .mode-card")).map((c) => c[0]), ACTS.map((_, i) => `Activité 2.${i + 1} Graphique`));
-  assert.deepEqual((await card(".exo-grid .mode-card")).map((c) => c[2]), ACTS.map((k) => `?ex=${k}`));
+  assert.deepEqual(await card(".analytique-grid .mode-card"), [
+    ["Activité 1.1 Analytique", "Imprimante 3D", "?ex=imprimante-3d"], ["Activité 1.2 Analytique", "Vanne d'admission d'air", "?ex=vanne-admission"],
+    ["Activité 1.3 Analytique", "Automotrice à grande vitesse", "?ex=agv"], ["Activité 1.4 Analytique", "Moteur électrique", "?ex=moteur-electrique"]]);
+  assert.deepEqual((await card(".exo-grid .mode-card")).map((c) => c[0]), GRAPH.map((_, i) => `Activité 2.${i + 1} Graphique`));
+  assert.deepEqual((await card(".exo-grid .mode-card")).map((c) => c[2]), GRAPH.map((k) => `?ex=${k}`));
   assert.deepEqual(await page.locator("#home h2").allInnerTexts(), ["Les cours", "L'atelier de construction",
     "Activités de cinématique analytique", "Activités de résolution graphique", "Études de cas"]);
   const cartes = await page.locator("#home .carte-v").evaluateAll((cs) => cs.map((c) => ({
     img: c.querySelector("img.cv-img") ? c.querySelector("img.cv-img").naturalWidth : -1,
     mots: c.querySelectorAll(".cv-mots li").length, p: c.querySelectorAll("p:not(.etat)").length,
     w: Math.round(c.offsetWidth), h: c.offsetHeight })));
-  assert.equal(cartes.length, 12);
+  assert.equal(cartes.length, 15);
   for (const c of cartes) {
     assert.ok(c.mots >= 3 && c.mots <= 5 && c.p === 0 && c.img > 0, JSON.stringify(c));
     assert.equal(c.w, cartes[0].w); assert.ok(Math.abs(c.h - cartes[0].h) <= 1, JSON.stringify(cartes));
   }
-  assert.equal(await page.locator(".en-edition .etat").count(), 2);
+  assert.equal(await page.locator(".en-edition .etat").count(), 1);
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   const src = html.replace(/data:[^"]+/g, "");
@@ -137,10 +149,40 @@ test("adresse inconnue : retour à l'accueil", async () => {
   await context.close();
 });
 
-test("cours 1 : simulateurs (train, vélo, vecteurs, hélice, MRUV, rotation), jeu, quiz", async () => {
+test("cours 1 : simulateurs (train, vélo, vecteurs, laboratoire, hélice, MRUV, rotation), exercices, jeu, quiz", async () => {
   const { context, page, errors } = await open("?ex=cours-cinematique-analytique");
   assert.match(await text(page, "#home .home-head"), /Cours 1[\s\S]*Analytique[\s\S]*Cinématique analytique/);
-  assert.equal(await page.locator(".cours-sec").count(), 9);
+  assert.equal(await page.locator(".cours-sec").count(), 11);
+  assert.deepEqual(await page.locator(".cours-nav a").allInnerTexts(), ["1. Référentiel et mouvement", "2. Trajectoire d'un point",
+    "3. Vitesse et accélération", "4. Analyse de mouvements", "5. Mouvements plans particuliers", "6. Cinématique du solide",
+    "7. Composition des mouvements", "8. MRU", "9. MRUV", "10. Mouvement circulaire", "11. Quiz"]);
+  // laboratoire des quatre mouvements : tableau des valeurs aux instants de la séquence
+  await page.click("#ca-labo [data-lm='2']");
+  assert.match(await text(page, "#ca-labo .ca-l-def"), /3t² \+ 1/);
+  assert.equal(await page.locator("#ca-labo .ca-l-tab tbody tr").count(), 5);
+  assert.equal((await page.locator("#ca-labo .ca-l-tab tbody tr").last().locator("td").nth(5).innerText()).trim(), "12,65");
+  await page.click("#ca-labo [data-lm='3']");
+  await page.locator("#ca-labo .ca-l-tr").evaluate((r) => { r.value = "1"; r.dispatchEvent(new Event("input")); });
+  assert.equal((await text(page, "#ca-labo .ca-l-nv")).trim(), "1,00 mm/s");
+  // exercices d'application : chaque réponse attendue est acceptée ; une valeur fausse, une unité oubliée sont signalées
+  const exos = page.locator(".exo-c");
+  assert.ok(await exos.count() >= 25);
+  for (const ex of await exos.all()) {
+    for (const i of await ex.locator(".exo-in").all()) {
+      const g = JSON.parse(await i.getAttribute("data-g"));
+      await i.fill(String(g.value).replace(".", ",") + (g.unit ? " " + g.unit.label : ""));
+    }
+    await ex.locator(".exo-v").click();
+    assert.match(await ex.getAttribute("class"), /is-ok/, await ex.locator(".exo-q").innerText());
+  }
+  const dist = page.locator(".exo-c", { hasText: "distance parcourue par M entre t = 0 et t = 2 s" });
+  await dist.locator(".exo-in").fill("12,65"); await dist.locator(".exo-v").click();
+  assert.match(await text(page, ".exo-c:has-text('distance parcourue par M entre') .exo-fb"), /unité/);
+  await dist.locator(".exo-in").fill("13 mm"); await dist.locator(".exo-v").click();
+  assert.match(await dist.getAttribute("class"), /is-ko/);
+  assert.ok(await dist.locator(".exo-sol").isHidden());
+  await dist.locator(".exo-s").click();
+  assert.match(await dist.locator(".exo-sol").innerText(), /√160/);
   await page.click("#ca-train [data-marche='-1']");
   await page.waitForTimeout(150);
   assert.equal((await text(page, "#ca-train .ca-v20")).trim(), "18,5 m/s");
@@ -336,6 +378,61 @@ test("ellipsographe, examen : CIR construit à l'équerre, rien n'est corrigé a
   assert.match(await text(page, "#recap .final-note"), /\/20/);
   assert.deepEqual(errors, []);
   await context.close();
+});
+
+test("imprimante 3D, entraînement : courbes et segments tracés sur les graphes, équations, 20/20 sur la phase 1", async () => {
+  const { context, page, errors } = await open("?ex=imprimante-3d");
+  await page.click("[data-mode=training]");
+  const id = "at-imprimante-3d-1";
+  assert.equal(await page.getAttribute(`#${id} [data-outil=segment]`, "aria-pressed"), "true", "outil Segment par défaut");
+  assert.equal(await page.locator(`#${id} [data-outil=vecteur]`).count(), 0, "barre restreinte aux outils des graphes");
+  // x(t) : courbe lissée par trois points calculés (exacte pour une parabole)
+  await outil(page, id, "courbe");
+  for (const t of [0, 1, 2]) await placer(page, id, 0, t, 16 * t * t + 50);
+  await page.click(`#${id} .at-c-fin`);
+  assert.equal(await page.inputValue("#in-h5_1"), "juste");
+  // v(t) : un segment faux, puis juste ; γ(t) : un palier
+  await outil(page, id, "segment");
+  await placer(page, id, 1, 0, 0); await placer(page, id, 1, 2, 50);
+  assert.equal(await page.inputValue("#in-h5_2"), "faux");
+  await page.click(`#${id} [data-act=annuler]`);
+  await placer(page, id, 1, 0, 0); await placer(page, id, 1, 2, 64);
+  await placer(page, id, 2, 0, 32); await placer(page, id, 2, 2, 32);
+  await page.click("#h5 .btn-trace");
+  assert.equal((await text(page, "#h5 .q-status")).trim(), "3 réponses justes sur 3");
+  // lecture des coordonnées au survol
+  const s = await ecran(page, id, await page.evaluate(() => { const G = window.__ATELIERS__["at-imprimante-3d-1"].graphes[0]; return [G.o[0] + 1.5 * G.kx, G.o[1] - 86 * G.ky]; }));
+  await page.mouse.move(s[0], s[1]);
+  assert.match(await text(page, `#${id} .at-mesure`), /t = 1,50 s · x = 86,0 mm/);
+  // cases des équations et du tableau de la phase 1
+  for (const [f, v] of [["h1_1", "50"], ["h1_2", "66"], ["h1_3", "114"]]) await page.fill(`#in-${f}`, v);
+  await page.click("#h1 .btn-fast");
+  assert.equal((await text(page, "#h1 .q-status")).trim(), "3 réponses justes sur 3");
+  for (const [f, v] of [["h4_1", "16"], ["h4_2", "0"], ["h4_3", "50"], ["h4_4", "32"], ["h4_5", "0"], ["h4_6", "32"]]) await page.fill(`#in-${f}`, v);
+  await page.click("#h4 .btn-fast");
+  assert.equal((await text(page, "#h4 .q-status")).trim(), "6 réponses justes sur 6");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("AGV : diagrammes discontinus tracés au segment, justes ; vanne : sans feuille, consignes analytiques", async () => {
+  const { context, page, errors } = await open("?ex=agv");
+  await page.click("[data-mode=training]");
+  const id = "at-agv-2", T2 = 37 / 0.35;
+  for (const [t0, t1, a] of [[0, 20, 0.5], [20, T2, 0.35], [T2, T2 + 300, 0.2]]) { await placer(page, id, 0, t0, a); await placer(page, id, 0, t1, a); }
+  for (const [t0, v0, t1, v1] of [[0, 0, 20, 10], [20, 10, T2, 40], [T2, 40, T2 + 300, 100]]) { await placer(page, id, 1, t0, v0); await placer(page, id, 1, t1, v1); }
+  for (const f of ["j12_1", "j12_2", "j12_3", "j13_1", "j13_2", "j13_3"]) assert.equal(await page.inputValue(`#in-${f}`), "juste", f);
+  assert.match(await text(page, ".consignes"), /Graphes à compléter/);
+  await context.close();
+  const v = await open("?ex=vanne-admission");
+  await v.page.click("[data-mode=exam]");
+  assert.equal(await v.page.locator(".atelier").count(), 0);
+  assert.equal(await v.page.locator(".fig-svg").count(), 1);
+  await v.page.fill("#in-i2", "3,125 mm/s");
+  await v.page.click("#exam-submit"); await v.page.click("#exam-submit");
+  assert.match(await v.page.getAttribute("#i2", "class"), /is-ok/);
+  assert.deepEqual(errors.concat(v.errors), []);
+  await v.context.close();
 });
 
 for (const key of ACTS) {
