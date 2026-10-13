@@ -52,13 +52,27 @@ UNITES = {
     "m3/s": {"label": "m³/s", "accept": ["m3/s", "m3s-1"]},
     "L/s": {"label": "L/s", "accept": ["l/s", "ls-1", "litre/s", "litres/s"]},
     "tours": {"label": "tours", "accept": ["tours", "tour", "tr"]},
+    "mm": {"label": "mm", "accept": ["mm", "millimetre", "millimetres"]},
+    "m": {"label": "m", "accept": ["m", "metre", "metres"]},
+    "km": {"label": "km", "accept": ["km", "kilometre", "kilometres"]},
+    "s": {"label": "s", "accept": ["s", "sec", "seconde", "secondes"]},
+    "mm/s2": {"label": "mm/s²", "accept": ["mm/s2", "mms-2", "mm/s/s"]},
+    "m/s2": {"label": "m/s²", "accept": ["m/s2", "ms-2", "m/s/s"]},
+    "rad": {"label": "rad", "accept": ["rad", "radian", "radians"]},
+    "rad/s2": {"label": "rad/s²", "accept": ["rad/s2", "rads-2"]},
+    "tr/s": {"label": "tr/s", "accept": ["tr/s", "trs-1", "tours/s", "tour/s"]},
+    "tr/min": {"label": "tr/min", "accept": ["tr/min", "trmin-1", "tr/mn", "tours/min", "tour/min", "rpm"]},
+    "km/h": {"label": "km/h", "accept": ["km/h", "kmh-1"]},
 }
 
 
-def NUM(valeur, unite, rel=0.05, variantes=()):
+def NUM(valeur, unite, rel=0.05, variantes=(), signe=True):
     """Valeur numérique avec unité (la moitié des points pour l'unité, règle du gabarit). Les tolérances relatives
-    tiennent compte de la précision d'un tracé : 1 à 2 % pour un calcul, 5 à 8 % pour une lecture sur la feuille."""
+    tiennent compte de la précision d'un tracé : 1 à 2 % pour un calcul, 5 à 8 % pour une lecture sur la feuille.
+    signe=False : le signe n'est pas noté (une décélération donnée en valeur absolue est acceptée)."""
     gr = {"type": "num", "value": round(valeur, 6), "relTol": rel, "unit": UNITES[unite]}
+    if not signe:
+        gr["abs"] = True
     if variantes:
         gr["variants"] = [{"value": round(v, 6), "relTol": rel, "unit": UNITES[u], "strictUnit": True} for v, u in variantes]
     return gr

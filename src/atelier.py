@@ -3,7 +3,9 @@
 attendus par les questions (« items ») et corrections, barre d'outils. Le moteur est dans src/atelier/atelier.js,
 son style dans src/atelier/atelier.css et src/atelier/figure.css.
 
-Coordonnées de feuille : millimètres, x vers la droite, y vers le bas (voir src/geometrie.py).
+Coordonnées de feuille : millimètres, x vers la droite, y vers le bas (voir src/geometrie.py). Une feuille peut
+porter des graphes (Feuille.graphe) : axes gradués en unités physiques, quadrillage, et conversion des coordonnées
+physiques (t, y) en coordonnées de feuille.
 """
 import html
 import math
@@ -37,6 +39,7 @@ class Feuille:
         self.pts = {}          # nom -> (x, y)
         self.lignes = []       # droites fixes (accrochage, référence des perpendiculaires et parallèles)
         self.cercles = []      # cercles fixes (trajectoires dessinées)
+        self.graphes = []      # graphes (axes gradués) : lecture des coordonnées physiques, accrochage au quadrillage
 
     # ---------------------------------------------------------- primitives
     def add(self, s):
@@ -159,6 +162,55 @@ class Feuille:
         self.add(f'<image href="{src}" x="{f(x)}" y="{f(y)}" width="{f(w)}" height="{f(h)}" opacity="{opacite}"'
                  f' preserveAspectRatio="none"/>')
 
+    def graphe(self, nom, o, kx, ky, t_max, y_min, y_max, grille_t, grille_y, nx="t", ny="x", ux="s", uy="mm",
+               up=None, dx=2, dy=1, titre=None, labels_y=None):
+        """Graphe d'une grandeur en fonction du temps : origine o (mm de feuille), échelles kx (mm par unité de temps)
+        et ky (mm par unité de la grandeur, vers le haut). grille_t et grille_y : (pas fin, pas épais, pas des
+        graduations chiffrées). up : unité de la pente affichée pendant un tracé. labels_y : graduations
+        supplémentaires {valeur: texte} (ex. 20π)."""
+        G = Graphe(self, len(self.graphes), nom, o, kx, ky, t_max, y_min, y_max, grille_t, grille_y, nx, ny, ux, uy, up,
+                   dx, dy)
+        x0, x1 = o[0], o[0] + t_max * kx
+        y0, y1 = o[1] - y_max * ky, o[1] - y_min * ky
+        pf, pe, pg = grille_t
+
+        def pas(v0, v1, h):
+            n0, n1 = math.ceil(v0 / h - 1e-9), math.floor(v1 / h + 1e-9)
+            return [round(i * h, 9) for i in range(n0, n1 + 1)]
+
+        for t in pas(0, t_max, pf):
+            cls = "gr2" if abs(t / pe - round(t / pe)) < 1e-6 else "gr"
+            self.trait(G.p(t, y_min), G.p(t, y_max), cls)
+        qf, qe, qg = grille_y
+        for y in pas(y_min, y_max, qf):
+            cls = "gr2" if abs(y / qe - round(y / qe)) < 1e-6 else "gr"
+            self.trait(G.p(0, y), G.p(t_max, y), cls)
+        # axes, flèches, graduations
+        self.fleche(G.p(0, 0), (x1 + 7, o[1]), "fl", 2.4)
+        self.fleche((x0, y1), (x0, y0 - 6), "fl", 2.4)
+        for t in pas(0, t_max, pg):
+            if abs(t) < 1e-9:
+                continue
+            self.trait(G.p(t, 0), g.add(G.p(t, 0), (0, 1.3)), "fin")
+            self.texte(g.add(G.p(t, 0), (0, 3.6)), num(t), "note", 3, "middle")
+        for y in pas(y_min, y_max, qg):
+            self.trait(G.p(0, y), g.add(G.p(0, y), (-1.3, 0)), "fin")
+            if abs(y) > 1e-9 or y_min < 0:  # zéro : écrit une seule fois, au coin de l'origine si l'axe y part de 0
+                self.texte(g.add(G.p(0, y), (-2.2, 0.1)), num(y), "note", 3, "end")
+        for y, txt in (labels_y or {}).items():
+            self.trait(G.p(0, y), g.add(G.p(0, y), (-1.3, 0)), "fin")
+            self.texte(g.add(G.p(0, y), (-2.2, 0.1)), txt, "note", 3, "end")
+        if y_min >= 0:
+            self.texte(g.add(G.p(0, 0), (-2.2, 3.4)), "0", "note", 3, "end")
+        self.texte((x1 + 8, o[1] - 3.2), f"{nx} ({ux})", "lab", 3.4, "end")
+        self.texte((x0 + 2.5, y0 - 4.5), f"{ny} ({uy})", "lab", 3.4, "start")
+        if titre:
+            self.texte((x1 + 8, y0 - 4.5), titre, "note", 3.2, "end")
+        self.lignes.append((o, (1, 0)))
+        self.lignes.append((o, (0, 1)))
+        self.graphes.append(G)
+        return G
+
     # ---------------------------------------------------------- sorties
     def svg_fig(self):
         return '<g class="at-fig">' + "".join(self.el) + "</g>"
@@ -167,7 +219,44 @@ class Feuille:
         return {"w": self.w, "h": self.h,
                 "pts": [[n, round(p[0], 3), round(p[1], 3)] for n, p in self.pts.items()],
                 "lignes": [[round(p[0], 3), round(p[1], 3), round(u[0], 6), round(u[1], 6)] for p, u in self.lignes],
-                "cercles": [[round(c[0], 3), round(c[1], 3), round(r, 3)] for c, r in self.cercles]}
+                "cercles": [[round(c[0], 3), round(c[1], 3), round(r, 3)] for c, r in self.cercles],
+                **({"graphes": [G.config() for G in self.graphes], "outil": "segment"} if self.graphes else {})}
+
+
+def num(x):
+    """Graduation d'un graphe : 0,5 ; 100 ; −40."""
+    s = f"{x:.3f}".rstrip("0").rstrip(".").replace(".", ",")
+    return s.replace("-", "−") if s not in ("-0", "") else "0"
+
+
+class Graphe:
+    """Un graphe d'une feuille : conversions entre unités physiques et millimètres de feuille, tracés de courbes."""
+
+    def __init__(self, F, i, nom, o, kx, ky, t_max, y_min, y_max, grille_t, grille_y, nx, ny, ux, uy, up, dx, dy):
+        self.F, self.i, self.nom, self.o, self.kx, self.ky = F, i, nom, o, kx, ky
+        self.t_max, self.y_min, self.y_max = t_max, y_min, y_max
+        self.grille_t, self.grille_y = grille_t, grille_y
+        self.nx, self.ny, self.ux, self.uy, self.up, self.dx, self.dy = nx, ny, ux, uy, up, dx, dy
+
+    def p(self, t, y):
+        return (self.o[0] + t * self.kx, self.o[1] - y * self.ky)
+
+    def box(self):
+        return [self.o[0], self.o[1] - self.y_max * self.ky, self.o[0] + self.t_max * self.kx,
+                self.o[1] - self.y_min * self.ky]
+
+    def echantillons(self, f, t0, t1, n=None):
+        n = n or max(12, int(abs(t1 - t0) * self.kx / 2.5))
+        return [self.p(t0 + (t1 - t0) * i / n, f(t0 + (t1 - t0) * i / n)) for i in range(n + 1)]
+
+    def courbe(self, f, t0, t1, cls="crb"):
+        """Courbe donnée (graphe d'un énoncé), dessinée sur la feuille."""
+        self.F.poly(self.echantillons(f, t0, t1, max(40, int(abs(t1 - t0) * self.kx))), cls)
+
+    def config(self):
+        return {"nom": self.nom, "o": [round(self.o[0], 3), round(self.o[1], 3)], "kx": self.kx, "ky": self.ky,
+                "box": [round(v, 3) for v in self.box()], "nx": self.nx, "ny": self.ny, "ux": self.ux, "uy": self.uy,
+                "up": self.up, "px": self.grille_t[0], "py": self.grille_y[0], "dx": self.dx, "dy": self.dy}
 
 
 # ====================================================================== éléments attendus (items)
@@ -188,6 +277,13 @@ def IT_PT(p, nom, lab=None, tolP=2.0):
 
 def IT_CI(c, r, lab, tolO=1.5):
     return {"k": "ci", "c": list(g.r2(c, 3)), "r": round(r, 3), "tolO": tolO, "lab": lab}
+
+
+def IT_COURBE(G, f, t0, t1, lab, tol=2.0):
+    """Portion de la courbe y = f(t) d'un graphe, entre t0 et t1 : échantillonnée tous les 2,5 mm environ."""
+    pts = G.echantillons(f, t0, t1)
+    return {"k": "courbe", "g": G.i, "pts": [list(g.r2(q, 3)) for q in pts], "x0": round(G.p(t0, 0)[0], 3),
+            "x1": round(G.p(t1, 0)[0], 3), "tol": tol, "lab": lab}
 
 
 def tol_cir(i, *pts):
@@ -216,6 +312,16 @@ def C_CI(c, r, st="aide"):
 
 def C_PT(p, lab="", st="res"):
     return {"t": "pt", "p": list(g.r2(p, 3)), "lab": lab, "st": st}
+
+
+def C_PL(pts, st="res"):
+    """Courbe (ligne brisée fine) de la correction."""
+    return {"t": "pl", "pts": [list(g.r2(q, 3)) for q in pts], "st": st}
+
+
+def C_COURBE(item, st="res"):
+    """Correction d'un item « courbe » : la courbe attendue."""
+    return {"t": "pl", "pts": item["pts"], "st": st}
 
 
 def C_TX(p, s, st="res", ancre="start"):
@@ -264,20 +370,28 @@ ICONES = {
     "mesure": '<path d="M3 15 15 3l6 6L9 21z"/><path d="M7 11l2 2M10 8l2 2M13 5l2 2"/>',
     "texte": '<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',
     "gomme": '<path d="M4 16 13 7l6 6-7 7H7z"/><path d="M9 11l6 6M12 20h8"/>',
+    "courbe": '<path d="M3 20c4-1 6-4 8-8s4-7 10-8"/><circle cx="3" cy="20" r="1.4"/><circle cx="11" cy="12" r="1.4"/><circle cx="21" cy="4" r="1.4"/>',
 }
 OUTILS = [("main", "Déplacer", "H"), ("point", "Point", "P"), ("droite", "Droite", "D"), ("segment", "Segment", "S"),
           ("vecteur", "Vecteur", "V"), ("perp", "Perpendiculaire", "E"), ("para", "Parallèle", "A"),
           ("proj", "Projeté", "O"), ("cercle", "Cercle", "C"), ("compas", "Compas", "K"), ("mesure", "Mesurer", "M"),
-          ("texte", "Texte", "T"), ("gomme", "Gomme", "G")]
-GROUPES_OUTILS = [["main"], ["point", "droite", "segment", "vecteur"], ["perp", "para", "proj"],
+          ("texte", "Texte", "T"), ("gomme", "Gomme", "G"), ("courbe", "Courbe", "U")]
+GROUPES_OUTILS = [["main"], ["point", "droite", "segment", "vecteur", "courbe"], ["perp", "para", "proj"],
                   ["cercle", "compas"], ["mesure", "texte", "gomme"]]
+OUTILS_FIGURE = ["main", "point", "droite", "segment", "vecteur", "perp", "para", "proj", "cercle", "compas", "mesure",
+                 "texte", "gomme"]
+OUTILS_GRAPHE = ["main", "point", "segment", "droite", "courbe", "mesure", "texte", "gomme"]
 COULEURS = [("#1F5FA8", "bleue"), ("#1B7A43", "verte"), ("#7B3FA0", "violette"), ("#1C2530", "noire")]
 
 
-def barre(ident):
+def barre(ident, outils=None):
     lab = {o: (n, k) for o, n, k in OUTILS}
+    outils = outils or OUTILS_FIGURE
     grp = []
     for gr in GROUPES_OUTILS:
+        gr = [o for o in gr if o in outils]
+        if not gr:
+            continue
         grp.append('<span class="at-grp">' + "".join(
             f'<button type="button" data-outil="{o}" aria-pressed="false" title="{lab[o][0]} (touche {lab[o][1]})">'
             f'<svg viewBox="0 0 24 24" aria-hidden="true">{ICONES[o]}</svg>{lab[o][0]}</button>' for o in gr) + "</span>")
@@ -299,9 +413,23 @@ def barre(ident):
     return f'<div class="at-bar" role="toolbar" aria-label="Outils de construction">{"".join(grp)}</div>'
 
 
-def render(ident, feuille, legende="", noms=()):
+def form_coord(ident, feuille):
+    """Placement d'un point par ses coordonnées physiques (feuilles à graphes)."""
+    gs = feuille.graphes
+    choix = ("" if len(gs) < 2 else '<label>Graphe <select class="at-c-g">' + "".join(
+        f'<option value="{G.i}">{esc(G.nom)}</option>' for G in gs) + "</select></label>")
+    return (f'<form class="at-coord" autocomplete="off"><span class="at-c-t">Placer un point :</span>{choix}'
+            f'<label><span class="at-c-lx">t</span> <input class="at-c-x" inputmode="decimal" aria-label="Abscisse du point"></label>'
+            f'<label><span class="at-c-ly">y</span> <input class="at-c-y" inputmode="decimal" aria-label="Ordonnée du point"></label>'
+            '<button type="submit">Placer</button><button type="button" class="at-c-fin">Terminer la courbe</button>'
+            '<span class="at-c-msg" role="alert"></span></form>')
+
+
+def render(ident, feuille, legende="", noms=(), outils=None):
     """HTML d'un atelier : barre d'outils, feuille SVG (figure + calques du moteur), aide, propriétés."""
     W, H = feuille.w, feuille.h
+    if feuille.graphes and outils is None:
+        outils = OUTILS_GRAPHE
     dl = "".join(f'<option value="{esc(n)}"></option>' for n in noms)
     svg = (f'<svg class="at-svg" viewBox="0 0 {f(W)} {f(H)}" preserveAspectRatio="xMidYMid meet" tabindex="0" '
            f'role="application" aria-roledescription="feuille de construction" aria-label="{esc(feuille.titre)} : '
@@ -309,13 +437,17 @@ def render(ident, feuille, legende="", noms=()):
            f'xmlns="http://www.w3.org/2000/svg"><rect class="at-papier" x="0" y="0" width="{f(W)}" height="{f(H)}"/>'
            f'{feuille.svg_fig()}<g class="at-grille"></g><g class="at-cons"></g><g class="at-corr"></g>'
            '<g class="at-tmp"></g></svg>')
-    return (f'<div class="atelier" data-cfg="{ident}" id="{ident}" data-titre="{esc(feuille.titre)}">{barre(ident)}'
+    haut = " at-haut" if H > 1.15 * W else ""
+    return (f'<div class="atelier{haut}" data-cfg="{ident}" id="{ident}" data-titre="{esc(feuille.titre)}">'
+            f'{barre(ident, outils)}'
             f'<div class="at-stage" style="--ar:{f(W)}/{f(H)}">{svg}</div>'
             '<div class="at-info" aria-live="polite"><span class="at-aide"></span><span class="at-mesure"></span></div>'
+            + (form_coord(ident, feuille) if feuille.graphes else "") +
             '<div class="at-prop" hidden><span class="at-p-type"></span>'
             f'<label class="at-p-nomw">Nom <input class="at-p-nom" list="dl-{ident}" autocomplete="off" '
             'placeholder="ex. V(A∈1/0)"></label>'
             '<label class="at-p-longw">Longueur <input class="at-p-long" inputmode="decimal" autocomplete="off"> mm</label>'
+            '<label class="at-p-lissew" hidden><input type="checkbox" class="at-p-lisse"> courbe lissée</label>'
             '<button type="button" class="at-p-suppr">Supprimer</button></div>'
             f'<datalist id="dl-{ident}">{dl}</datalist>'
             + (f'<p class="at-legende">{legende}</p>' if legende else "") + "</div>")
