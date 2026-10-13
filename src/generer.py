@@ -30,6 +30,7 @@ import atelier
 import cours_analytique
 import cours_commun
 import cours_graphique
+import cours_mouvements
 from medias import IMAGES, image, png
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -941,14 +942,15 @@ def build():
     templates.append(f'<template id="tpl-cours-cinematique-graphique">{cours_graphique.render(AIDES_COURS)}</template>')
     templates.append(f'<template id="tpl-atelier-libre">{render_atelier_libre()}</template>')
 
-    cours_js = (cours_commun.JS + cours_analytique.JS + cours_graphique.JS +
+    cours_js = (cours_commun.JS + cours_analytique.JS + cours_mouvements.JS + cours_graphique.JS +
                 '\n  var INIT = { "cours-cinematique-analytique": initCoursAnalytique, '
                 '"cours-cinematique-graphique": initCoursGraphique };\n')
     config = (f"<script>window.__EXOS__ = {json.dumps(exos_cfg, ensure_ascii=False)};</script>\n"
               f"<script>window.__ATELIERS__ = {json.dumps(ATELIERS, ensure_ascii=False, separators=(',', ':'))};</script>")
     router = (ROUTER_JS.replace("__COURS_JS__", cours_js).replace("__TITRE__", TITRE)
               .replace("__HOUSE__", HOUSE.replace("'", "\\'")))
-    css = CONTENT_CSS.replace("__COURS_CSS__", cours_commun.CSS + cours_analytique.CSS + cours_graphique.CSS)
+    css = CONTENT_CSS.replace("__COURS_CSS__", cours_commun.CSS + cours_analytique.CSS + cours_mouvements.CSS +
+                              cours_graphique.CSS)
 
     page = f"""<!DOCTYPE html>
 <html lang="fr">

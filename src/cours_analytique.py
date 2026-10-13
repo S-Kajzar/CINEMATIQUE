@@ -6,7 +6,12 @@ La partie graphique du chapitre (équiprojectivité, centre instantané de rotat
 figures du chapitre sont des captures de manuel : aucune n'est reprise telle quelle ; elles sont redessinées en SVG
 et rendues vivantes (train et voyageur, roue de vélo, vecteurs position, vitesse et accélération, mouvements plans,
 répartition des vitesses, mouvement rectiligne uniformément varié, rotation du point).
+
+La séquence « Cinématique analytique » complète le cours (src/cours_mouvements.py) : abscisse curviligne, composantes
+tangentielle et normale de l'accélération, analyse de quatre mouvements, MRU, MRUV et mouvement circulaire, avec leurs
+applications en exercices auto-corrigés.
 """
+import cours_mouvements as cm
 from cours_commun import course_head, course_section, course_nav, quiz_section, jeu_html, cartes, formule, frac, vec
 
 V = vec("V")
@@ -17,10 +22,10 @@ OM = vec("OM")
 def render(A):
     H = A.HOUSE
     sections = [("ca-referentiel", "Référentiel et mouvement"), ("ca-trajectoire", "Trajectoire d'un point"),
-                ("ca-vitesse", "Vitesse et accélération"), ("ca-mouvements", "Mouvements plans particuliers"),
-                ("ca-solide", "Cinématique du solide"), ("ca-composition", "Composition des mouvements"),
-                ("ca-translation", "Point en translation"), ("ca-rotation", "Point en rotation"),
-                ("ca-quiz", "Quiz")]
+                ("ca-vitesse", "Vitesse et accélération"), ("ca-analyse", "Analyse de mouvements"),
+                ("ca-mouvements", "Mouvements plans particuliers"), ("ca-solide", "Cinématique du solide"),
+                ("ca-composition", "Composition des mouvements"), ("ca-mru", "MRU"), ("ca-mruv", "MRUV"),
+                ("ca-circulaire", "Mouvement circulaire"), ("ca-quiz", "Quiz")]
     s = []
     # ------------------------------------------------------------------ 1. référentiel
     s.append(course_section(1, "ca-referentiel", "Référentiel, mouvement absolu et relatif", f"""
@@ -63,7 +68,7 @@ est en mouvement par rapport au repère absolu : le mouvement qu'on y décrit es
 <div><span>V(2/0) : voyageur / voie</span><b class="ca-v20"></b></div><div><span>Mouvement observé</span><b class="ca-obs"></b></div></div>
 <p class="simu-note">R0 (O, x0, y0) lié à la terre : repère absolu ; R1 lié au train et R2 lié au voyageur : repères relatifs.
 Mvt 1/0 et Mvt 2/0 sont des mouvements absolus, Mvt 2/1 un mouvement relatif. Les vitesses s'ajoutent :
-V(2/0) = V(2/1) + V(1/0) (composition des mouvements, section 6). Valeurs choisies pour l'animation.</p></div>
+V(2/0) = V(2/1) + V(1/0) (composition des mouvements, section 7). Valeurs choisies pour l'animation.</p></div>
 """))
     # ------------------------------------------------------------------ 2. trajectoire
     s.append(course_section(2, "ca-trajectoire", "Trajectoire d'un point", f"""
@@ -83,7 +88,8 @@ rebroussement à chaque tour, quand A touche la route. T(B∈1/0) = T(B∈2/0) :
 T(C∈2/0) : une droite. Par rapport au cadre, A décrit un cercle (T(A∈1/2)).</p></div>
 """))
     # ------------------------------------------------------------------ 3. vitesse, accélération
-    s.append(course_section(3, "ca-vitesse", "Vecteurs position, vitesse et accélération", f"""
+    s.append(course_section(3, "ca-vitesse", "Abscisse curviligne, vitesse et accélération", cm.vitesse_avant() + f"""
+<h3>Les vecteurs position, vitesse et accélération</h3>
 <p>Le solide (S1) est en mouvement par rapport au repère R0 (O, x0, y0) ; son point M décrit la trajectoire T M1/0.</p>
 <div class="cours-split"><div>
 <h3>Vecteur position</h3>{formule(f"{OM} = x(t)·<span class=vec>x</span> + y(t)·<span class=vec>y</span>")}
@@ -103,7 +109,9 @@ mouvement se fait à vitesse constante.</p>
 <div><span>‖V‖</span><b class="ca-nv"></b></div><div><span>Γ : x''(t) ; y''(t)</span><b class="ca-acc"></b></div></div>
 <p class="simu-note">En rouge le vecteur position OM, en bleu la vitesse (toujours tangente à la trajectoire), en vert
 l'accélération (tournée vers l'intérieur de la courbe). Échelles différentes pour les trois vecteurs.</p></div>
-"""))
+""" + cm.vitesse_apres()))
+    # ------------------------------------------------------------------ 4. analyse de mouvements (séquence analytique)
+    s.append(course_section(4, "ca-analyse", "Analyse de mouvements", cm.analyse()))
     # ------------------------------------------------------------------ 4. mouvements plans
     jeu = jeu_html([("Le tiroir d'une commode qu'on ouvre", "tr"), ("Une porte qui pivote sur ses gonds", "ro"),
                     ("La bielle d'un moteur", "pl"), ("La nacelle d'une grande roue de fête foraine", "tc"),
@@ -112,7 +120,7 @@ l'accélération (tournée vers l'intérieur de la courbe). Échelles différent
                     ("Une roue de vélo, par rapport à la route", "pl")],
                    [("tr", "Translation rectiligne"), ("tc", "Translation circulaire"), ("ro", "Rotation"),
                     ("pl", "Mouvement plan")], "ca-jeu-mvt")
-    s.append(course_section(4, "ca-mouvements", "Mouvements plans particuliers", f"""
+    s.append(course_section(5, "ca-mouvements", "Mouvements plans particuliers", f"""
 <table class="t cours-t"><thead><tr><th>Mouvement</th><th>Exemple</th><th>Nature des trajectoires</th></tr></thead><tbody>
 <tr><td><strong>Translation rectiligne</strong></td><td>Coulisseau sur une barre</td><td>Droites parallèles, de direction l'axe de translation ; tout segment AB reste parallèle à lui-même (A0A = B0B).</td></tr>
 <tr><td><strong>Rotation</strong></td><td>Hélice d'avion</td><td>Cercles concentriques, de centre le centre de rotation.</td></tr>
@@ -130,7 +138,7 @@ concentriques, courbes quelconques, cercles de même rayon.</p>
 <h3>Jeu : quel est le mouvement ?</h3>{jeu}
 """))
     # ------------------------------------------------------------------ 5. solide
-    s.append(course_section(5, "ca-solide", "Cinématique du solide", f"""
+    s.append(course_section(6, "ca-solide", "Cinématique du solide", f"""
 <p>Un solide est supposé géométriquement parfait, homogène et <strong>indéformable</strong>.</p>
 <h3>Mouvement de translation rectiligne</h3>
 <p>Tous les points du solide ont des trajectoires parallèles, qui sont des droites ; leurs vecteurs vitesse sont
@@ -161,7 +169,7 @@ celle de tous les autres.</p>
 chapitre ; à mi-longueur, la vitesse est moitié moindre.</p></div>
 """))
     # ------------------------------------------------------------------ 6. composition
-    s.append(course_section(6, "ca-composition", "Composition des mouvements", f"""
+    s.append(course_section(7, "ca-composition", "Composition des mouvements", f"""
 <p>Soit un solide (3) en mouvement par rapport à un solide (2), lui-même en mouvement par rapport à un solide (1). Le
 mouvement de (3) par rapport à (1) est le <strong>composé</strong> des deux mouvements précédents :
 Mvt 3/1 = Mvt 3/2 + Mvt 2/1.</p>
@@ -185,69 +193,19 @@ sans glisser : V(A, roue/route) = <span class=vec>0</span>, comme pour le vélo 
 <p>La construction graphique de la composition des vitesses est traitée dans le
 <a href="?ex=cours-cinematique-graphique#cg-composition">cours 2, section 7</a>.</p>
 """))
-    # ------------------------------------------------------------------ 7. translation du point
-    s.append(course_section(7, "ca-translation", "Cinématique du point : mouvements de translation", f"""
-<p>Les résultats de cette partie s'appliquent à un solide en translation comme à un point matériel : la trajectoire
-de M est la droite (O, <span class=vec>x</span>), d'équation y = z = 0.</p>
-<div class="cours-split"><div>
-<h3>Mouvement rectiligne uniforme</h3>
-<p>Vitesse constante, accélération nulle. x<sub>0</sub> : position à t = 0 ; v<sub>0</sub> : vitesse du mouvement.</p>
-{formule("γ = 0 ; v = v<sub>0</sub> ; x = v<sub>0</sub>·t + x<sub>0</sub>")}
-</div><div>
-<h3>Mouvement rectiligne uniformément varié</h3>
-<p>Accélération constante. Conditions initiales : x = x<sub>0</sub>, v = v<sub>0</sub>, γ = γ<sub>0</sub>.</p>
-{formule("γ = γ<sub>0</sub> ; v = γ·t + v<sub>0</sub> ; x = ½·γ·t² + v<sub>0</sub>·t + x<sub>0</sub>")}
-{formule("v² = v<sub>0</sub>² + 2·γ·(x − x<sub>0</sub>)", "formule utile : sans le temps")}
-</div></div>
-<div class="simu" id="ca-mruv"><h3>Simulateur : x(t), v(t) et a(t)</h3>
-<div class="simu-grid"><label>Position initiale x<sub>0</sub> <output class="ca-x0"></output><input type="range" min="-20" max="20" step="1" value="0" class="ca-x0r"></label>
-<label>Vitesse initiale v<sub>0</sub> <output class="ca-v0"></output><input type="range" min="-10" max="20" step="0.5" value="4" class="ca-v0r"></label>
-<label>Accélération γ <output class="ca-g"></output><input type="range" min="-4" max="4" step="0.25" value="1.5" class="ca-gr"></label></div>
-<div class="simu-btns"><button type="button" class="btn ca-go">Lancer le mobile</button><button type="button" class="btn ghost" data-pre="u">Mouvement uniforme</button>
-<button type="button" class="btn ghost" data-pre="a">Démarrage d'une voiture</button><button type="button" class="btn ghost" data-pre="f">Freinage</button></div>
-<div class="simu-fig"><svg viewBox="0 0 760 360" role="img" aria-label="Le mobile sur son axe et les trois graphes x(t), v(t), a(t)"><g class="ca-g-monde"></g></svg></div>
-<div class="simu-out"><div><span>Instant t</span><b class="ca-ot"></b></div><div><span>Position x</span><b class="ca-ox"></b></div>
-<div><span>Vitesse v</span><b class="ca-ov"></b></div><div><span>Nature</span><b class="ca-on"></b></div></div>
-<p class="simu-note">Graphes sur 10 s. La pente de x(t) est la vitesse ; la pente de v(t) est l'accélération. En
-mouvement uniforme, x(t) est une droite ; en mouvement uniformément varié, une branche de parabole.</p></div>
-"""))
-    # ------------------------------------------------------------------ 8. rotation du point
-    s.append(course_section(8, "ca-rotation", "Cinématique du point : mouvements de rotation", f"""
-<p>Le point P tourne autour de O dans le plan (O, <span class=vec>x</span>, <span class=vec>y</span>) : sa trajectoire est un cercle de centre O et de rayon
-r = OP. On utilise les coordonnées polaires (r, θ) dans le repère (P, <span class=vec>n</span>, <span class=vec>t</span>, <span class=vec>z</span>) : <span class=vec>n</span> dirigé de O vers P, <span class=vec>t</span>
-tangent.</p>
-<div class="cours-split"><div>
-{formule(f"{vec('OP')} = r·<span class=vec>n</span> = r cos θ·<span class=vec>x</span> + r sin θ·<span class=vec>y</span>", "vecteur position")}
-{formule("ω = dθ/dt = θ̇", "vitesse angulaire (rad/s) ; vecteur rotation Ω = ω·<span class=vec>z</span>")}
-{formule("ω̇ = d²θ/dt² = dω/dt", "accélération angulaire (rad/s²)")}
-</div><div>
-{formule(f"{V}P(1/0) = v·<span class=vec>t</span> = r·ω·<span class=vec>t</span>", "vecteur vitesse")}
-{formule(f"{G}P = Γn·<span class=vec>n</span> + Γt·<span class=vec>t</span>", "accélération : composante normale et composante tangentielle")}
-{formule("Γn = ω²·r = V²/r = ω·V ; Γt = ω̇·r")}
-</div></div>
-<div class="cours-split"><div><h3>Rotation uniforme</h3><p>ω̇ = 0, ω constante : θ = ω<sub>0</sub>·t + θ<sub>0</sub>.
-Γt = 0, donc {G}P = Γn·<span class=vec>n</span> : l'accélération <strong>n'est pas nulle</strong> ; portée par la normale, elle est dirigée
-vers le centre.</p></div>
-<div><h3>Rotation uniformément variée</h3><p>ω̇ constante : ω = ω̇·t + ω<sub>0</sub> ; θ = ½·ω̇·t² + ω<sub>0</sub>·t + θ<sub>0</sub> ;
-ω² = ω<sub>0</sub>² + 2·ω̇·(θ − θ<sub>0</sub>). Mouvement <strong>accéléré</strong> : Γt dans le sens de V ;
-<strong>décéléré</strong> : Γt en sens opposé. Γn est toujours dirigée vers le centre.</p></div></div>
-<div class="simu" id="ca-rot"><h3>Le point P en rotation : V, Γn, Γt</h3>
-<div class="simu-grid"><label>Vitesse angulaire initiale ω<sub>0</sub> <output class="ca-w0"></output><input type="range" min="0.2" max="3" step="0.1" value="1.2" class="ca-w0r"></label>
-<label>Accélération angulaire ω̇ <output class="ca-wp"></output><input type="range" min="-0.5" max="0.5" step="0.05" value="0.2" class="ca-wpr"></label>
-<label>Rayon r : 1 m</label></div>
-<div class="simu-btns"><button type="button" class="btn ca-go">Lancer</button><button type="button" class="btn ghost ca-raz">Recommencer</button></div>
-<div class="simu-fig"><svg viewBox="0 0 760 330" role="img" aria-label="Point P sur un cercle avec sa vitesse, ses accélérations normale et tangentielle"><g class="ca-r-monde"></g></svg></div>
-<div class="simu-out"><div><span>ω</span><b class="ca-ow"></b></div><div><span>V = r·ω</span><b class="ca-ovr"></b></div>
-<div><span>Γn = ω²·r ; Γt = ω̇·r</span><b class="ca-og"></b></div><div><span>Mouvement</span><b class="ca-onat"></b></div></div>
-<p class="simu-note">Bleu : vitesse V ; vert : accélérations normale Γn (vers le centre) et tangentielle Γt, et leur
-somme Γ en vert foncé. Quand ω s'annule en mouvement décéléré, le point s'arrête puis repart en sens inverse.</p></div>
-<h3>L'essentiel à retenir</h3>
-""" + cartes([("Référentiel", "Repère d'espace + repère de temps. Le mouvement dépend toujours du référentiel : on note Mvt 1/0."),
-              ("Trajectoire", "Courbe décrite par un point dans un repère ; toujours préciser à quel solide le point appartient."),
-              ("Vitesse", "Dérivée du vecteur position ; tangente à la trajectoire ; en m/s."),
-              ("Accélération", "Dérivée du vecteur vitesse ; en m/s². En rotation uniforme, elle est dirigée vers le centre."),
-              ("Rotation", "V = r·ω, ω = 2πN/60 ; vitesse perpendiculaire au rayon, proportionnelle à la distance à l'axe."),
-              ("MRUV", "v = γt + v0 ; x = ½γt² + v0t + x0 ; v² = v0² + 2γ(x − x0).")])))
+    # ------------------------------------------------------------------ 8 à 10. MRU, MRUV, mouvement circulaire
+    s.append(course_section(8, "ca-mru", "Mouvement rectiligne uniforme (MRU)", cm.mru(A)))
+    s.append(course_section(9, "ca-mruv", "Mouvement rectiligne uniformément varié (MRUV)", cm.mruv(SIMU_MRUV)))
+    essentiel = cartes([
+        ("Référentiel", "Repère d'espace + repère de temps. Le mouvement dépend toujours du référentiel : on note Mvt 1/0."),
+        ("Trajectoire", "Courbe décrite par un point dans un repère ; toujours préciser à quel solide le point appartient."),
+        ("Vitesse", "Dérivée de la position (v = dx/dt) ; tangente à la trajectoire ; en m/s."),
+        ("Accélération", "Dérivée de la vitesse ; Γt = dv/dt sur la tangente, Γn = −v²/R sur la normale extérieure."),
+        ("MRU", "γ = 0 ; v constante ; x = v·t + x0. Graphe des espaces : une droite de pente v."),
+        ("MRUV", "γ constante ; v = γt + v0 ; x = ½γt² + v0t + x0 ; v² − v0² = 2γ(x − x0)."),
+        ("MCU", "θ = ωt + θ0 ; v = R·ω ; ω = 2πN/60 ; accélération R·ω², dirigée vers le centre."),
+        ("Distance parcourue", "Aire sous le graphe des vitesses ; en MRUV : (v début + v fin) / 2 × durée.")])
+    s.append(course_section(10, "ca-circulaire", "Mouvement circulaire (MC, MCU, MCUV)", cm.circulaire(A, SIMU_ROT, essentiel)))
     # ------------------------------------------------------------------ quiz
     quiz = [
         ("Un référentiel, c'est…", ["un repère d'espace seul", "un repère d'espace et un repère de temps", "le solide le plus lourd"], 1,
@@ -271,18 +229,44 @@ somme Γ en vert foncé. Quand ω s'annule en mouvement décéléré, le point s
         ("V(A, 3/1) = V(A, 3/2) + V(A, 2/1) : V(A, 3/2) est la vitesse…", ["absolue", "relative", "d'entraînement"], 1,
          "Vitesse absolue = vitesse relative + vitesse d'entraînement."),
     ]
-    s.append(quiz_section(9, "ca-quiz", quiz, "caq"))
+    s.append(quiz_section(11, "ca-quiz", quiz + cm.QUIZ, "caq"))
     return (course_head("Cours 1", "analytique", "Cinématique analytique",
                         "Décrire le mouvement par le calcul : référentiels, trajectoires, vitesses et accélérations, "
-                        "mouvements de translation et de rotation, composition des mouvements.",
+                        "analyse de mouvements, mouvements rectilignes uniforme et uniformément varié, mouvement "
+                        "circulaire, composition des mouvements.",
                         ["Définir le mouvement d'un solide par rapport à un référentiel.",
                          "Exprimer et calculer vitesses et accélérations d'un point.",
-                         "Exploiter les lois du mouvement uniforme et uniformément varié, en translation et en rotation."],
-                        ["Notions de vecteur et de dérivée.", "Repérage dans le plan (coordonnées cartésiennes et polaires)."])
+                         "Définir un mouvement par son équation horaire ; reconnaître un mouvement uniforme ou "
+                         "uniformément varié, rectiligne ou circulaire.",
+                         "Exploiter les lois et les graphes de ces mouvements (MRU, MRUV, MCU, MCUV)."],
+                        ["Concept de mouvement ; coordonnées d'un vecteur.", "Résolution d'équations et dérivation "
+                         "d'une fonction.", "Repérage dans le plan (coordonnées cartésiennes et polaires)."])
             + f'<p class="c-top"><a href="?">{H} Accueil</a></p>' + course_nav(sections) + '<div class="cours">'
             + "".join(s) + '</div><div class="cours-foot"><a class="btn" href="?ex=cours-cinematique-graphique">Cours 2 : '
             f'cinématique graphique</a><a class="btn ghost" href="?">{H} Accueil</a></div>')
 
+
+SIMU_MRUV = """<div class="simu" id="ca-mruv"><h3>Simulateur : x(t), v(t) et a(t)</h3>
+<div class="simu-grid"><label>Position initiale x<sub>0</sub> <output class="ca-x0"></output><input type="range" min="-20" max="20" step="1" value="0" class="ca-x0r"></label>
+<label>Vitesse initiale v<sub>0</sub> <output class="ca-v0"></output><input type="range" min="-10" max="20" step="0.5" value="4" class="ca-v0r"></label>
+<label>Accélération γ <output class="ca-g"></output><input type="range" min="-4" max="4" step="0.25" value="1.5" class="ca-gr"></label></div>
+<div class="simu-btns"><button type="button" class="btn ca-go">Lancer le mobile</button><button type="button" class="btn ghost" data-pre="u">Mouvement uniforme</button>
+<button type="button" class="btn ghost" data-pre="a">Démarrage d'une voiture</button><button type="button" class="btn ghost" data-pre="f">Freinage</button></div>
+<div class="simu-fig"><svg viewBox="0 0 760 360" role="img" aria-label="Le mobile sur son axe et les trois graphes x(t), v(t), a(t)"><g class="ca-g-monde"></g></svg></div>
+<div class="simu-out"><div><span>Instant t</span><b class="ca-ot"></b></div><div><span>Position x</span><b class="ca-ox"></b></div>
+<div><span>Vitesse v</span><b class="ca-ov"></b></div><div><span>Nature</span><b class="ca-on"></b></div></div>
+<p class="simu-note">Graphes sur 10 s. La pente de x(t) est la vitesse ; la pente de v(t) est l'accélération. En
+mouvement uniforme, x(t) est une droite ; en mouvement uniformément varié, une branche de parabole.</p></div>"""
+SIMU_ROT = """<div class="simu" id="ca-rot"><h3>Le point P en rotation : V, Γn, Γt</h3>
+<div class="simu-grid"><label>Vitesse angulaire initiale ω<sub>0</sub> <output class="ca-w0"></output><input type="range" min="0.2" max="3" step="0.1" value="1.2" class="ca-w0r"></label>
+<label>Accélération angulaire θ'' <output class="ca-wp"></output><input type="range" min="-0.5" max="0.5" step="0.05" value="0.2" class="ca-wpr"></label>
+<label>Rayon r : 1 m</label></div>
+<div class="simu-btns"><button type="button" class="btn ca-go">Lancer</button><button type="button" class="btn ghost ca-raz">Recommencer</button></div>
+<div class="simu-fig"><svg viewBox="0 0 760 330" role="img" aria-label="Point P sur un cercle avec sa vitesse, ses accélérations normale et tangentielle"><g class="ca-r-monde"></g></svg></div>
+<div class="simu-out"><div><span>ω</span><b class="ca-ow"></b></div><div><span>V = r·ω</span><b class="ca-ovr"></b></div>
+<div><span>|Γn| = ω²·r ; Γt = θ''·r</span><b class="ca-og"></b></div><div><span>Mouvement</span><b class="ca-onat"></b></div></div>
+<p class="simu-note">Bleu : vitesse V ; vert : accélérations normale Γn (vers le centre) et tangentielle Γt, et leur
+somme Γ en vert foncé. Quand ω s'annule en mouvement décéléré, le point s'arrête puis repart en sens inverse.</p></div>"""
 
 JS = r"""
   /* ---------------------------------------------------------------- cours 1 : cinématique analytique */
@@ -579,7 +563,7 @@ JS = r"""
         el(g, "text", { x: C[0] - 18, y: C[1] + 18, "font-size": 16, "font-weight": 700 }, "O");
         el(g, "text", { x: 470, y: 60, "font-size": 15, fill: "#1F5FA8", "font-weight": 700 }, "V = r·ω (tangente)");
         el(g, "text", { x: 470, y: 85, "font-size": 15, fill: "#1B7A43", "font-weight": 700 }, "Γn = ω²·r (vers O)");
-        el(g, "text", { x: 470, y: 110, "font-size": 15, fill: "#4CAF50", "font-weight": 700 }, "Γt = ω̇·r (tangente ; Γt ×4)");
+        el(g, "text", { x: 470, y: 110, "font-size": 15, fill: "#4CAF50", "font-weight": 700 }, "Γt = θ''·r (tangente ; Γt ×4)");
         el(g, "text", { x: 470, y: 135, "font-size": 15, fill: "#0B5A2E", "font-weight": 700 }, "Γ = Γn + Γt");
         box.querySelector(".ca-w0").textContent = fr(+w0r.value, 1) + " rad/s";
         box.querySelector(".ca-wp").textContent = fr(wp, 2) + " rad/s²";
@@ -598,6 +582,7 @@ JS = r"""
       });
       dessin();
     })();
+    initLaboMouvements(root, el, fleche);
   }
 """
 

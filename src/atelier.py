@@ -202,8 +202,8 @@ class Feuille:
             self.texte(g.add(G.p(0, y), (-2.2, 0.1)), txt, "note", 3, "end")
         if y_min >= 0:
             self.texte(g.add(G.p(0, 0), (-2.2, 3.4)), "0", "note", 3, "end")
-        self.texte((x1 + 8, o[1] - 3.2), f"{nx} ({ux})", "lab", 3.4, "end")
-        self.texte((x0 + 2.5, y0 - 4.5), f"{ny} ({uy})", "lab", 3.4, "start")
+        self.texte((x1 + 8, o[1] - 3.2), f"{nx} ({ux})" if ux else nx, "lab", 3.4, "end")
+        self.texte((x0 + 2.5, y0 - 4.5), f"{ny} ({uy})" if uy else ny, "lab", 3.4, "start")
         if titre:
             self.texte((x1 + 8, y0 - 4.5), titre, "note", 3.2, "end")
         self.lignes.append((o, (1, 0)))
