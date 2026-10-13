@@ -32,6 +32,7 @@ body.at-plein-ouvert .banner,body.at-plein-ouvert .rail{display:none}
 .at-bar .at-sw[aria-pressed="true"]{outline:2px solid var(--encre)}
 .at-bar .at-zoom{font:600 .78rem var(--f-titre); min-width:3.4em; text-align:center}
 .at-stage{position:relative; height:min(68vh,660px); min-height:300px; background:#DADDD8; overflow:hidden}
+.atelier.at-haut .at-stage{height:max(420px, calc(100vh - 300px))}
 .at-svg{display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; font-family:var(--f-texte); user-select:none; -webkit-user-select:none}
 .at-svg:focus{outline:none}
 .at-svg:focus-visible{outline:3px solid var(--bleu); outline-offset:-3px}
@@ -49,6 +50,7 @@ body.at-plein-ouvert .banner,body.at-plein-ouvert .rail{display:none}
 .at-accroche.at-point{stroke:#B26A00; fill:rgba(242,183,5,.25)}
 .at-accroche.at-intersection{stroke:#7B3FA0; fill:rgba(123,63,160,.15)}
 .at-accroche.at-sur{stroke:#1B7A43; fill:none; stroke-dasharray:3 2}
+.at-accroche.at-grille{stroke:#1F5FA8; fill:rgba(31,95,168,.12)}
 .at-corr{opacity:.92}
 .at-info{display:flex; flex-wrap:wrap; gap:4px 14px; padding:5px 10px; min-height:2.1em; font-size:.86rem; border-top:1px solid var(--trait-fin); background:#FAFAF8}
 .at-aide{color:var(--encre-2)}
@@ -63,6 +65,16 @@ body.at-plein-ouvert .banner,body.at-plein-ouvert .rail{display:none}
 .at-prop button{border:1px solid var(--rouge); color:var(--rouge); background:#fff; padding:3px 9px; cursor:pointer; font:600 .84rem var(--f-texte); border-radius:2px}
 .at-texte{position:absolute; z-index:3; min-width:110px; font:700 15px var(--f-texte); border:1.5px solid var(--bleu); padding:2px 5px; background:#fff}
 .at-legende{font-size:.82rem; color:var(--encre-2); padding:4px 10px 6px; margin:0}
+/* graphes : placer un point par ses coordonnées */
+.at-coord{display:flex; flex-wrap:wrap; align-items:center; gap:5px 10px; padding:5px 10px; border-top:1px solid var(--trait-fin); background:#F2F6FB; font-size:.86rem}
+.at-coord label{display:inline-flex; align-items:center; gap:4px; font-weight:600}
+.at-c-t{font-weight:700}
+.at-coord input{width:5.5em; border:1.5px solid var(--encre-2); padding:2px 6px; font:inherit; background:#fff; border-radius:2px}
+.at-coord select{font:inherit; padding:2px 4px}
+.at-coord button{border:1px solid var(--bleu); background:#fff; color:var(--bleu); padding:3px 9px; font:600 .82rem var(--f-texte); cursor:pointer; border-radius:2px}
+.at-coord button[type="submit"]{background:var(--bleu); color:#fff}
+.at-c-msg{color:var(--rouge); font-weight:600}
+.at-c-msg:empty{display:none}
 
 /* questions de construction : chaque élément attendu sur la feuille, son état, puis son verdict */
 .trace{border-left-color:var(--bleu)}
@@ -101,7 +113,7 @@ body.at-plein-ouvert .banner,body.at-plein-ouvert .rail{display:none}
 @media print{
   .at-zone{display:block}
   .at-zone>.atelier{position:static; break-inside:avoid; margin:0 0 4mm}
-  .at-bar,.at-info,.at-prop,.btn-trace,.dm-nav{display:none!important}
+  .at-bar,.at-info,.at-prop,.at-coord,.btn-trace,.dm-nav{display:none!important}
   .at-stage{height:auto; aspect-ratio:var(--ar, 4/3); background:#fff; border:1px solid #999}
   .at-tmp{display:none}
   body:not(.corrections-open) .at-corr{display:none}

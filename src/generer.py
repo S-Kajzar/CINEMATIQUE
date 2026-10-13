@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """Génère la page « Cinématique » (index.html) : un accueil sur le modèle du dépôt « Chaîne fonctionnelle » (lui-même
 repris du dépôt « Résistance des matériaux »), deux cours interactifs (cinématique analytique, cinématique
-graphique), un atelier de construction libre et les activités de résolution graphique, chacun ouvert par ?ex=….
+graphique), un atelier de construction libre et les activités de cinématique analytique et de résolution graphique,
+chacun ouvert par ?ex=….
 
     python3 src/generer.py
 
@@ -13,9 +14,10 @@ juste(s) » des questions à plusieurs éléments, et CONSEIL_MIN, lu dans windo
 conseillée dépend de l'activité ouverte. Un petit script d'aiguillage, exécuté avant les moteurs, installe le contenu
 demandé par l'adresse.
 
-Les activités (src/activites.py) reprennent chacune un exercice de la séquence « Cinématique graphique » ; leurs
-constructions se font dans l'atelier (src/atelier.py, src/atelier/), qui écrit son verdict dans les champs masqués
-lus par le moteur du gabarit.
+Les activités de résolution graphique (src/activites.py) reprennent chacune un exercice de la séquence « Cinématique
+graphique » ; celles de cinématique analytique (src/activites_analytiques.py), une étude de système de la séquence
+« Cinématique analytique ». Constructions et graphes se font dans l'atelier (src/atelier.py, src/atelier/), qui écrit
+son verdict dans les champs masqués lus par le moteur du gabarit.
 """
 import html
 import json
@@ -24,10 +26,12 @@ import re
 import types
 
 import activites
+import activites_analytiques
 import atelier
 import cours_analytique
 import cours_commun
 import cours_graphique
+import cours_mouvements
 from medias import IMAGES, image, png
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -130,6 +134,36 @@ def render_etq(b):
         </div>"""
 
 
+def render_champs(b):
+    """Cases numériques insérées dans un texte (coefficients d'une équation horaire, tableau de valeurs) : structure
+    « fast-q » du gabarit ; le repère [[i]] du modèle reçoit la i-ème case (numérotée à partir de 1)."""
+    gid, label = b["id"], b["num"]
+
+    def case(m):
+        i = int(m[1]) - 1
+        fid, fl = b["fids"][i], b["fields"][i][0]
+        return (f'<span class="sol"><input type="text" class="ch-in" id="in-{fid}" data-q="{fid}" inputmode="decimal" '
+                f'autocomplete="off" spellcheck="false" aria-label="{esc(re.sub(r"<[^>]+>", "", fl))}">'
+                '<span class="mark" aria-live="polite"></span></span>')
+    corps = re.sub(r"\[\[(\d+)\]\]", case, b["gabarit"])
+    assert corps.count('class="ch-in"') == len(b["fields"]), f"{label} : cases du modèle"
+    sol = "".join(f"<tr><td>{fl}</td><td>{e}</td></tr>" for fl, _g, e in b["fields"])
+    n = len(b["fields"])
+    return f"""
+        <div class="fast-q grp champs" id="{gid}">
+          <p class="q-stem"><span class="q-num">{label}</span> <strong>{b['stem']}</strong></p>
+          <p class="q-hint">{b['hint']}</p>
+          <div class="ch-corps">{corps}</div>
+          <div class="fast-foot"><button type="button" class="btn btn-fast">Valider {'les ' + str(n) + ' cases' if n > 1 else 'la case'}</button>
+            <span class="q-status" aria-live="polite"></span></div>
+          <p class="q-msg" role="alert"></p>
+          <div class="q-expl" hidden>
+            <table class="t grp-sol"><thead><tr><th>Case</th><th>Réponse attendue</th></tr></thead><tbody>{sol}</tbody></table>
+            <div class="q-why">{b['why']}</div>
+          </div>
+        </div>"""
+
+
 def render_trace(b):
     """Éléments à construire sur la feuille : un champ masqué par élément, que l'atelier remplit (« juste », « faux »
     ou rien tant que rien n'est tracé) ; le bouton « Valider ma construction » relaie le bouton du gabarit."""
@@ -156,7 +190,8 @@ def render_trace(b):
 
 
 def item_points(b):
-    return {"q": 1, "etq": len(b.get("fields", ())), "trace": len(b.get("fields", ()))}.get(b["kind"], 0)
+    return {"q": 1, "etq": len(b.get("fields", ())), "trace": len(b.get("fields", ())),
+            "champs": len(b.get("fields", ()))}.get(b["kind"], 0)
 
 
 def part_points(p):
@@ -177,6 +212,8 @@ def render_block(b):
         return render_etq(b)
     if b["kind"] == "trace":
         return render_trace(b)
+    if b["kind"] == "champs":
+        return render_champs(b)
     return b["html"]
 
 
@@ -189,6 +226,11 @@ def render_part(e, p):
         leg = ("Construis directement sur la feuille. Les points de la figure, les extrémités et les intersections de tes "
                "tracés attirent le pointeur. Ctrl + molette (ou deux doigts) : zoom ; outil Déplacer : faire glisser la "
                "feuille ; Échap : annuler l'étape en cours.")
+        if p["meca"].F.graphes:
+            leg = ("Trace sur les graphes : la position du pointeur s'y lit en unités physiques et les nœuds du "
+                   "quadrillage l'attirent ; « Placer un point » pose un point par ses coordonnées. Segment pour une "
+                   "portion droite, Courbe pour un arc de parabole (pose ses points, puis touche à nouveau le dernier). "
+                   "Ctrl + molette (ou deux doigts) : zoom ; Échap : annuler l'étape en cours.")
         zone = (f'<div class="at-zone">{atelier.render(p["at_id"], p["meca"].F, leg, p["noms"])}'
                 f'<div class="at-questions">{blocks}</div></div>')
     else:
@@ -218,7 +260,7 @@ def prepare_exo(e):
         if cfg:
             cfg.update({"items": {}, "groupes": {}, "corr": {}})
         for b in p["blocks"]:
-            if b["kind"] in ("q", "etq", "trace"):
+            if b["kind"] in ("q", "etq", "trace", "champs"):
                 k += 1
                 b["id"] = f"{e['prefix']}{k}"
                 if b["kind"] != "q":
@@ -233,8 +275,8 @@ def prepare_exo(e):
             ATELIERS[p["at_id"]] = cfg
     e["P"] = parts
     e["minutes"] = sum(p["minutes"] for p in parts)
-    blocs = [b for p in parts for b in p["blocks"] if b["kind"] in ("q", "etq", "trace")]
-    e["n_q"] = len({re.match(r"Q\d+", b["num"])[0] for b in blocs})
+    blocs = [b for p in parts for b in p["blocks"] if b["kind"] in ("q", "etq", "trace", "champs")]
+    e["n_q"] = len({re.match(r"Q\d+(?:\.\d+)?", b["num"])[0] for b in blocs})
     e["n_trace"] = sum(len(b["fields"]) for b in blocs if b["kind"] == "trace")
     e["points"] = sum(part_points(p) for p in parts)
     qcfg, parts_cfg = {}, []
@@ -244,13 +286,14 @@ def prepare_exo(e):
         for b in p["blocks"]:
             if b["kind"] == "q":
                 qcfg[b["id"]] = {"label": b["num"], "part": p["num"], "pts": 1, "grader": b["grader"]}
-            elif b["kind"] in ("etq", "trace"):
+            elif b["kind"] in ("etq", "trace", "champs"):
                 for fid, (fl, gr, _x) in zip(b["fids"], b["fields"]):
                     qcfg[fid] = {"label": f"{b['num']} — {re.sub(r'<[^>]+>', '', fl)}", "part": p["num"], "pts": 1,
                                  "grader": gr}
     np_ = len(parts)
     traces = f" dont {e['n_trace']} éléments à construire sur la feuille" if e["n_trace"] else ""
     e["cfg"] = {"title": e["title"], "minutes": e["minutes"], "duree": hm(e["minutes"]),
+                "consignes": "tpl-consignes-ana" if e.get("dt") == "ana" else "tpl-consignes",
                 "atelier": any(p.get("meca") for p in parts),
                 "cartouche": f"{e['n_q']} questions, {e['points']} points{traces}, en {np_} partie{'s' if np_ > 1 else ''}"
                              + (" pondérées par leur durée." if np_ > 1 else "."),
@@ -296,7 +339,62 @@ régler sa longueur au millimètre. <strong>Mesurer</strong> : distance et angle
 E perpendiculaire, A parallèle, O projeté, C cercle, K compas, M mesurer, P point, G gomme, H déplacer ; Ctrl+Z annuler.</li></ul>
 </div>""")
 
+DT_ANA = ("Formulaire de cinématique analytique", """<div class="doc-text">
+<h3>Position, vitesse, accélération</h3>
+<p>Le mouvement d'un point M est connu par son équation horaire x = f(t) (abscisse curviligne, en m ou mm). La
+vitesse est la dérivée de la position, l'accélération la dérivée de la vitesse :</p>
+<ul><li>v(t) = dx/dt = x'(t) (m/s) ; γ(t) = dv/dt = x''(t) (m/s²) ;</li>
+<li>pour un vecteur position OM = x(t)·x + y(t)·y + z(t)·z : V(M∈S/R) = x'·x + y'·y + z'·z et
+Γ(M∈S/R) = x''·x + y''·y + z''·z ; ‖V‖ = √(x'² + y'² + z'²).</li>
+<li>Accélération moyenne entre t<sub>1</sub> et t<sub>2</sub> : γ<sub>moy</sub> = (v<sub>2</sub> − v<sub>1</sub>) /
+(t<sub>2</sub> − t<sub>1</sub>).</li></ul>
+<h3>Mouvement rectiligne uniforme (MRU)</h3>
+<p>γ = 0 ; v = constante ; x(t) = v·t + x<sub>0</sub>. Graphe des espaces : une droite de pente v ; graphe des
+vitesses : une horizontale.</p>
+<h3>Mouvement rectiligne uniformément varié (MRUV)</h3>
+<p>γ = constante ; v(t) = γ·t + v<sub>0</sub> ; x(t) = ½ γ·t² + v<sub>0</sub>·t + x<sub>0</sub>. Sans le temps :
+v² − v<sub>0</sub>² = 2 γ (x − x<sub>0</sub>). Accéléré si γ et v sont de même signe, décéléré sinon. Graphe des
+espaces : un arc de parabole ; des vitesses : une droite de pente γ ; des accélérations : une horizontale.</p>
+<ul><li>Distance parcourue = aire sous la courbe des vitesses = vitesse moyenne × durée, avec, pour un MRUV,
+v<sub>moy</sub> = (v<sub>début</sub> + v<sub>fin</sub>) / 2.</li>
+<li>Origine des temps placée au début d'une phase : t' = t − t<sub>début</sub> ; x<sub>0</sub> et v<sub>0</sub> sont
+alors la position et la vitesse au début de la phase. Dans le repère absolu, on écrit la continuité de la position et
+de la vitesse à l'instant où la phase commence.</li></ul>
+<h3>Mouvement circulaire (rotation d'axe fixe)</h3>
+<ul><li>Abscisse angulaire θ (rad), vitesse angulaire ω = θ' (rad/s), accélération angulaire θ'' (rad/s²).</li>
+<li>Abscisse curviligne s = R·θ ; vitesse v = R·ω ; ω = 2π·N / 60 (N en tr/min).</li>
+<li>MCU : θ = ω·t + θ<sub>0</sub> ; accélération normale Γ<sub>n</sub> = R·ω² = v² / R, dirigée vers le centre.</li>
+<li>MCUV : θ = ½ θ''·t² + ω<sub>0</sub>·t + θ<sub>0</sub> ; ω = θ''·t + ω<sub>0</sub> ; Γ<sub>t</sub> = R·θ''.</li>
+<li>Transmission par poulies et courroie (sans glissement) : même vitesse linéaire de la courroie, ω<sub>1</sub>·R<sub>1</sub>
+= ω<sub>2</sub>·R<sub>2</sub>.</li></ul>
+<h3>Graphes sur la feuille</h3>
+<ul><li>La position du pointeur se lit en unités physiques sous la feuille ; les nœuds du quadrillage attirent le
+pointeur ; « Placer un point » pose un point par ses coordonnées (avec l'outil en cours : point, segment, courbe…).</li>
+<li><strong>Segment</strong> : une portion droite (sa pente s'affiche pendant le tracé). <strong>Courbe</strong> :
+pose les points un à un, puis touche à nouveau le dernier point (ou Entrée, ou « Terminer la courbe ») ; la courbe
+passe par les points posés, lissée (une case de la barre de propriétés la rend brisée).</li>
+<li>Une portion de courbe est juste si le tracé la suit à 2 mm près sur la feuille. Raccourcis : P point, S segment,
+D droite, U courbe, M mesurer, G gomme, H déplacer ; Ctrl+Z annuler.</li></ul>
+</div>""")
+
 DP = {
+    "imprimante-3d": ("Imprimante 3D", '<div class="doc-text"><h3>Axe x d\'une imprimante 3D</h3><p>Le chariot (1) porte '
+                      "la buse qui dépose l'ABS fondu. Il est guidé en translation par deux pivots glissants parallèles "
+                      "(A et B) et entraîné par le moteur M<sub>1</sub> par l'intermédiaire d'une liaison hélicoïdale "
+                      "(C). L'axe y, identique, est placé en dessous.</p></div>__FIG:photo-imprimante|Schéma de l'axe x "
+                      "d'une imprimante 3D|Chariot (1), bâti (0), moteur M<sub>1</sub>.|600__"),
+    "vanne-admission": ("Vanne d'admission d'air", '<div class="doc-text"><h3>Vanne additionnelle d\'air</h3><p>Montée '
+                        "sur le corps d'injection, elle régule le débit d'air entrant dans le moteur. Le moteur de la "
+                        "vanne (liaison pivot) entraîne le boisseau en translation par une glissière hélicoïdale de pas "
+                        "0,5 mm ; le boisseau ouvre ou ferme le passage de l'air.</p></div>__FIG:photo-vanne|Corps "
+                        "d'injection, vanne d'air et schéma cinématique|Vanne d'air et schéma cinématique.|520__"),
+    "agv": ("Automotrice à grande vitesse", '<div class="doc-text"><h3>L\'AGV</h3><p>Train à grande vitesse construit par '
+            "Alstom, à motorisation répartie le long de la rame.</p><ul><li>Juin 2004 : lancement du programme de "
+            "réalisation du prototype de l'AGV.</li><li>3 avril 2007 : le TGV bat, avec les composants de l'AGV, un "
+            "nouveau record du monde sur rail (574,8 km/h).</li><li>17 janvier 2008 : Alstom et NTV, premier opérateur "
+            "privé sur les lignes italiennes à grande vitesse, signent le premier contrat AGV.</li><li>5 février 2008 : "
+            "l'AGV est officiellement dévoilé à la presse.</li><li>Octobre 2010 : livraison du premier exemplaire en "
+            "Italie.</li></ul></div>__FIG:photo-agv|Automotrice à grande vitesse|L'AGV.|640__"),
     "arbre-transmission": ("Arbre de transmission", '<div class="doc-text"><h3>Arbre de transmission</h3><p>L\'arbre porte, '
                            "en liaison encastrement, plusieurs roues dentées de diamètres différents : la roue (1) "
                            "(Ø 50 mm) et la roue (4) (Ø 100 mm). L'ensemble forme un seul solide en rotation autour de "
@@ -322,7 +420,8 @@ def render_docs(e):
     docs = []
     if e["key"] in DP:
         docs.append(("DP1", DP[e["key"]][0], "Dossier présentation", False, figures(DP[e["key"]][1])))
-    docs.append(("DT1", DT1[0], "Dossier technique", True, DT1[1]))
+    dt = DT_ANA if e.get("dt") == "ana" else DT1
+    docs.append(("DT1", dt[0], "Dossier technique", True, dt[1]))
     rail, tabs, secs, first_dt = [], [], [], True
     for key, title, kind, is_dt, content in docs:
         if is_dt and first_dt and rail:
@@ -392,6 +491,13 @@ CONSIGNES = """<p class="only-training"><strong>Mode entraînement.</strong> Ré
     <p><strong>Les tracés se font sur la feuille</strong>, à côté des questions (elle reste à l'écran pendant que tu fais défiler les questions ; le bouton « Plein écran » l'agrandit avec les questions). Outils du papier : règle (droite, segment), équerre (perpendiculaire, parallèle, projeté), compas, vecteur, mesure. Les éléments attendus par une question sont listés sous son énoncé : « tracé repéré » indique que l'atelier a trouvé un tracé à cet endroit, sans dire s'il est juste. <strong>Nomme tes vecteurs</strong> (V(A∈1/0)…) : un vecteur nommé ne compte que pour la vitesse de ce nom.</p>
     <p><strong>Tolérances.</strong> Un vecteur est juste si son origine est sur le point (à 1,5 mm près), sa direction à 3° près et sa longueur à 6 % près ; une valeur lue sur le tracé est acceptée à 5 à 8 % près. <strong>Les unités sont notées</strong> : une valeur juste sans unité, ou avec une unité fausse, ne rapporte que la moitié des points.</p>
     <p>Le dossier technique DT1 (méthodes graphiques et mode d'emploi de l'atelier) et, s'il existe, le dossier de présentation DP1 s'ouvrent avec les onglets sur le bord droit.</p>
+    <p><strong>Barème pondéré par la durée conseillée</strong> : chaque partie est notée sur 20, puis pèse au prorata de son temps.</p>"""
+
+CONSIGNES_ANA = """<p class="only-training"><strong>Mode entraînement.</strong> Réponds puis valide question par question : une réponse validée est définitive, sa correction s'affiche aussitôt.</p>
+    <p class="only-exam"><strong>Mode examen.</strong> Compose tout le sujet sans correction ni note : réponses et tracés restent modifiables jusqu'au bout. Le bouton « J'ai fini, je fais corriger ma copie », en fin de sujet, dévoile d'un coup les corrections, les notes par partie et la note globale.</p>
+    <p><strong>Réponses.</strong> Une valeur se saisit avec son unité : <strong>les unités sont notées</strong>, une valeur juste sans unité, ou avec une unité fausse, ne rapporte que la moitié des points. Les cases d'une équation ou d'un tableau attendent un nombre seul (l'unité est écrite à côté) ; écris 0 pour un terme absent ; elles se valident ensemble. Les valeurs calculées sont acceptées à 1 % près, celles lues sur un graphe à 3 % près.</p>
+    <p><strong>Graphes à compléter.</strong> Lorsqu'une partie en comporte, ils se tracent sur la feuille placée à côté des questions (le bouton « Plein écran » l'agrandit avec les questions). Sous la feuille, la position du pointeur se lit en unités physiques et « Placer un point » pose un point par ses coordonnées. Une portion de courbe est juste si ton tracé la suit à 2 mm près sur la feuille.</p>
+    <p>Le formulaire DT1 (MRU, MRUV, mouvement circulaire, mode d'emploi des graphes) et, s'il existe, le dossier de présentation DP1 s'ouvrent avec les onglets sur le bord droit.</p>
     <p><strong>Barème pondéré par la durée conseillée</strong> : chaque partie est notée sur 20, puis pèse au prorata de son temps.</p>"""
 
 COURS = [
@@ -501,7 +607,7 @@ ROUTER_JS = r"""<script>/* Aiguillage : accueil, cours, atelier ou activité sel
     $(".dp-tabs").innerHTML = tpl("tpl-tabs-" + ex);
     $(".dp-body").innerHTML = tpl("tpl-docs-" + ex);
     $("#parts").innerHTML = tpl("tpl-parts-" + ex);
-    $(".consignes").innerHTML = tpl("tpl-consignes");
+    $(".consignes").innerHTML = tpl(E.consignes || "tpl-consignes");
     home.innerHTML = tpl("tpl-home-" + ex) + tpl("tpl-modes");
     $(".cartouche h1").textContent = E.title;
     $(".cartouche .title p").textContent = E.cartouche;
@@ -661,6 +767,23 @@ CONTENT_CSS = r"""<style>
 .vv sub{font-size:.72em}
 .ins-app{padding:6px 12px; font-size:1.05rem}
 .remarque{border-left:6px solid var(--jaune); background:var(--jaune-pale); padding:8px 14px; margin:12px 0; max-width:80ch}
+.fig-svg svg{display:block; width:100%; height:auto; background:#fff; border:1px solid var(--trait-fin)}
+
+/* ---------- cases numériques dans une équation ou un tableau (mécanisme « fast-q » du gabarit) ---------- */
+.ch-corps{margin:8px 0 6px; max-width:820px}
+.ch-l{margin:.3rem 0; line-height:2.5; font-size:1.02rem}
+.ch-u{color:var(--encre-2); font-size:.9rem}
+.grp .ch-corps .sol{display:inline-flex; align-items:center; gap:3px; vertical-align:middle; margin:0 .1em}
+.ch-in{width:5.6em; border:1.5px solid var(--encre-2); padding:4px 6px; font:600 .95rem var(--f-texte); background:#fff; border-radius:2px; text-align:center}
+.ch-in:focus{outline:3px solid var(--jaune); outline-offset:0}
+.ch-in:disabled{background:#F2F3F1; color:var(--encre)}
+.grp .ch-corps .sol .mark{flex:0 0 auto; font-size:.72rem}
+.grp .ch-corps .sol .mark:empty{display:none}
+.grp .ch-corps .sol.is-ok .ch-in{border-color:var(--vert); background:var(--vert-pale)}
+.grp .ch-corps .sol.is-ko .ch-in{border-color:var(--rouge); background:var(--rouge-pale)}
+.ch-tab{margin:6px 0; width:auto}
+.ch-tab th,.ch-tab td{text-align:center; padding:4px 8px}
+.ch-tab tbody th{text-align:left; font-weight:600}
 
 /* ---------- questions à plusieurs cases (mécanisme « fast-q » du gabarit) et étiquettes ---------- */
 .grp{margin:14px 0 6px; padding:10px 0 12px 14px; border-left:3px solid var(--trait-fin)}
@@ -797,7 +920,7 @@ def build():
     app = sub_once(app, r'ok \+ " case" \+ \(ok > 1 \? "s" : ""\) \+ " juste" \+ \(ok > 1 \? "s" : ""\) \+ " sur " \+ inputs\.length',
                    'ok + " réponse" + (ok > 1 ? "s" : "") + " juste" + (ok > 1 ? "s" : "") + " sur " + inputs.length')
 
-    exos = [f() for f in activites.ACTIVITES]
+    exos = [f() for f in activites_analytiques.ACTIVITES + activites.ACTIVITES]
     templates, exos_cfg = [], {}
     for e in exos:
         prepare_exo(e)
@@ -813,20 +936,22 @@ def build():
                       f'<template id="tpl-parts-{k}">{parts_html}\n</template>']
         exos_cfg[k] = e["cfg"]
     templates.append(f'<template id="tpl-consignes">{CONSIGNES}</template>')
+    templates.append(f'<template id="tpl-consignes-ana">{CONSIGNES_ANA}</template>')
     templates.append(f'<template id="tpl-modes">{MODES_HTML}</template>')
     templates.append(f'<template id="tpl-hub">{render_hub(exos)}</template>')
     templates.append(f'<template id="tpl-cours-cinematique-analytique">{cours_analytique.render(AIDES_COURS)}</template>')
     templates.append(f'<template id="tpl-cours-cinematique-graphique">{cours_graphique.render(AIDES_COURS)}</template>')
     templates.append(f'<template id="tpl-atelier-libre">{render_atelier_libre()}</template>')
 
-    cours_js = (cours_commun.JS + cours_analytique.JS + cours_graphique.JS +
+    cours_js = (cours_commun.JS + cours_analytique.JS + cours_mouvements.JS + cours_graphique.JS +
                 '\n  var INIT = { "cours-cinematique-analytique": initCoursAnalytique, '
                 '"cours-cinematique-graphique": initCoursGraphique };\n')
     config = (f"<script>window.__EXOS__ = {json.dumps(exos_cfg, ensure_ascii=False)};</script>\n"
               f"<script>window.__ATELIERS__ = {json.dumps(ATELIERS, ensure_ascii=False, separators=(',', ':'))};</script>")
     router = (ROUTER_JS.replace("__COURS_JS__", cours_js).replace("__TITRE__", TITRE)
               .replace("__HOUSE__", HOUSE.replace("'", "\\'")))
-    css = CONTENT_CSS.replace("__COURS_CSS__", cours_commun.CSS + cours_analytique.CSS + cours_graphique.CSS)
+    css = CONTENT_CSS.replace("__COURS_CSS__", cours_commun.CSS + cours_analytique.CSS + cours_mouvements.CSS +
+                              cours_graphique.CSS)
 
     page = f"""<!DOCTYPE html>
 <html lang="fr">
@@ -834,7 +959,7 @@ def build():
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{TITRE} — cours et activités interactifs</title>
-<meta name="description" content="Cinématique : cours interactifs (cinématique analytique, cinématique graphique), atelier de construction et activités de résolution graphique (équiprojectivité, centre instantané de rotation, composition des vitesses).">
+<meta name="description" content="Cinématique : cours interactifs (cinématique analytique, cinématique graphique), atelier de construction, activités de cinématique analytique (MRU, MRUV, mouvement circulaire) et de résolution graphique (équiprojectivité, centre instantané de rotation, composition des vitesses).">
 {style}
 {css}
 <style>{atelier.CSS}</style>

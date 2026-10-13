@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """Éléments communs aux cours (repris du dépôt « Chaîne fonctionnelle ») : en-tête, sections numérotées, sommaire,
-quiz noté, jeux de classement, cartes à retourner, encadrés de formules ; leur comportement et leur style."""
+quiz noté, jeux de classement, cartes à retourner, encadrés de formules, exercices d'application auto-corrigés ;
+leur comportement et leur style."""
+import html
+import json
+import re
 
 
 def pastille(partie):
@@ -62,6 +66,42 @@ def cartes(items, cls=""):
     return ('<div class="cartes">' + "".join(
         f'<button type="button" class="carte {cls}" aria-expanded="false"><b>{t}</b><span class="dos">{d}</span></button>'
         for t, d in items) + "</div>")
+
+
+def exo(num, enonce, champs, solution, gabarit=None, aide=""):
+    """Exercice d'application auto-corrigé par le moteur de correction du gabarit (window.Grading), sans note :
+    l'élève vérifie autant de fois qu'il veut, puis peut afficher la solution. champs = [(libellé, correcteur)] ;
+    gabarit : texte HTML où le repère [[i]] reçoit la i-ème case (sinon, une case unique sous l'énoncé)."""
+    def case(i, large=False):
+        lab, gr = champs[i]
+        cls, mode = ("exo-in exo-large", "") if large else ("exo-in", ' inputmode="decimal"')
+        g, lb = html.escape(json.dumps(gr, ensure_ascii=False)), html.escape(re.sub(r"<[^>]+>", "", lab))
+        return (f'<input type="text" class="{cls}" data-g="{g}" aria-label="{lb}" autocomplete="off" '
+                f'spellcheck="false"{mode}>')
+    if gabarit is None:
+        assert len(champs) == 1
+        corps = case(0, True)
+    else:
+        corps = re.sub(r"\[\[(\d+)\]\]", lambda m: case(int(m[1]) - 1), gabarit)
+        assert corps.count('class="exo-in') == len(champs), num
+    return (f'<div class="exo-c"><p class="exo-q"><span class="q-num">{num}</span> {enonce}</p>'
+            + (f'<p class="exo-aide">{aide}</p>' if aide else "") +
+            f'<div class="exo-corps">{corps}</div><div class="exo-pied"><button type="button" class="btn exo-v">Vérifier'
+            '</button><button type="button" class="btn ghost exo-s" aria-expanded="false">Voir la solution</button>'
+            f'<span class="exo-fb" aria-live="polite"></span></div><div class="exo-sol" hidden>{solution}</div></div>')
+
+
+def num(valeur, unite, accept, rel=0.01, signe=True):
+    """Correcteur d'une valeur avec unité (moteur du gabarit : la moitié des points sans unité)."""
+    g = {"type": "num", "value": round(valeur, 6), "relTol": rel, "unit": {"label": unite, "accept": accept}}
+    if not signe:
+        g["abs"] = True
+    return g
+
+
+def nombre(valeur, tol=0.005, rel=0.01):
+    """Correcteur d'un nombre seul (coefficient d'une équation, coordonnée)."""
+    return {"type": "num", "value": round(valeur, 6), "relTol": rel, "absTol": tol}
 
 
 def formule(main, units=""):
@@ -149,8 +189,44 @@ JS = r"""
       b.addEventListener("click", function () { b.setAttribute("aria-expanded", b.getAttribute("aria-expanded") === "true" ? "false" : "true"); });
     });
   }
+  // exercices d'application : vérification par le moteur de correction du gabarit, autant de fois que voulu
+  function initExos(root) {
+    Array.prototype.forEach.call(root.querySelectorAll(".exo-c"), function (b) {
+      var ins = Array.prototype.slice.call(b.querySelectorAll(".exo-in")), fb = b.querySelector(".exo-fb");
+      function verifier() {
+        var G = window.Grading, vides = 0, justes = 0, demi = 0;
+        ins.forEach(function (i) {
+          i.classList.remove("ok", "demi", "ko");
+          if (!i.value.trim()) { vides++; return; }
+          var r = G.grade(i.value, JSON.parse(i.getAttribute("data-g")));
+          if (r.invalid) { i.classList.add("ko"); return; }
+          if (r.score === 1) { justes++; i.classList.add("ok"); }
+          else if (r.score === 0.5) { demi++; i.classList.add("demi"); }
+          else i.classList.add("ko");
+        });
+        b.classList.remove("is-ok", "is-ko");
+        if (vides === ins.length) { fb.textContent = "Complète d'abord la réponse."; return; }
+        if (justes === ins.length) { fb.textContent = "✔ Juste !"; b.classList.add("is-ok"); return; }
+        b.classList.add("is-ko");
+        if (demi && justes + demi === ins.length) { fb.textContent = "≈ Valeur juste, mais l'unité manque ou est fausse."; return; }
+        fb.textContent = ins.length > 1 ? "✘ " + (ins.length - justes) + " case" + (ins.length - justes > 1 ? "s" : "") +
+          " à revoir (en rouge) : corrige, ou consulte la solution." : "✘ Pas encore : corrige, ou consulte la solution.";
+      }
+      b.querySelector(".exo-v").addEventListener("click", verifier);
+      ins.forEach(function (i) {
+        i.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); verifier(); } });
+        i.addEventListener("input", function () { i.classList.remove("ok", "demi", "ko"); });
+      });
+      var bs = b.querySelector(".exo-s"), sol = b.querySelector(".exo-sol");
+      bs.addEventListener("click", function () {
+        sol.hidden = !sol.hidden; bs.setAttribute("aria-expanded", sol.hidden ? "false" : "true");
+        bs.textContent = sol.hidden ? "Voir la solution" : "Masquer la solution";
+      });
+    });
+  }
   function initCommun(root) {
     initQuiz(root);
+    initExos(root);
     Array.prototype.forEach.call(root.querySelectorAll(".jeu"), initJeu);
     initCartes(root);
   }
@@ -240,6 +316,25 @@ body.cours-page .part-body>p,body.cours-page .part-body>ul{max-width:none}
 .cours-foot{display:flex; flex-wrap:wrap; gap:10px; margin:6px 0 0}
 .cours-foot .small{align-self:center}
 table.t.cours-t td,table.t.cours-t th{vertical-align:middle}
+.exo-c{border:1.5px solid var(--encre); border-left:6px solid var(--bleu); background:#fff; padding:8px 14px 10px; margin:10px 0; max-width:880px}
+.exo-c.is-ok{border-left-color:var(--vert)} .exo-c.is-ko{border-left-color:var(--rouge)}
+.exo-q{margin:0 0 4px; font-weight:600}
+.exo-aide{margin:0 0 4px; font-size:.88rem; color:var(--encre-2)}
+.exo-corps{margin:4px 0; line-height:2.5}
+.exo-corps .t{margin:4px 0; width:auto}
+.exo-corps .t th,.exo-corps .t td{text-align:center; padding:3px 8px}
+.exo-in{width:5.6em; border:1.5px solid var(--encre-2); padding:4px 6px; font:600 .95rem var(--f-texte); background:#fff; border-radius:2px; text-align:center; vertical-align:middle}
+.exo-in.exo-large{width:min(100%,22em); text-align:left}
+.exo-in:focus{outline:3px solid var(--jaune); outline-offset:0}
+.exo-in.ok{border-color:var(--vert); background:var(--vert-pale)}
+.exo-in.demi{border-color:var(--orange); background:var(--jaune-pale)}
+.exo-in.ko{border-color:var(--rouge); background:var(--rouge-pale)}
+.exo-pied{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:4px 0 0}
+.exo-pied .btn{padding:6px 12px; font-size:.9rem}
+.exo-fb{font-weight:700}
+.exo-c.is-ok .exo-fb{color:var(--vert)} .exo-c.is-ko .exo-fb{color:var(--rouge)}
+.exo-sol{border-top:1px dashed var(--trait); margin:8px 0 0; padding:6px 0 0; font-size:.94rem}
+.exo-sol p{margin:.25rem 0}
 .mini-anim{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px; margin:10px 0}
 .mini-anim figure{margin:0; background:#fff; border:1px solid var(--trait-fin); padding:6px}
 .mini-anim svg{display:block; width:100%; height:auto}
@@ -248,6 +343,8 @@ table.t.cours-t td,table.t.cours-t th{vertical-align:middle}
   body.cours-page #home{display:block!important; padding:0}
   .no-print,.cours-nav,.cours-foot,.simu-btns{display:none!important}
   .quiz-why[hidden]{display:block!important}
+  .exo-sol[hidden]{display:block!important}
+  .exo-pied .btn{display:none!important}
   .carte .dos{display:block!important}
   .carte::after{display:none!important}
 }

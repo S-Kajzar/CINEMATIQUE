@@ -8,6 +8,10 @@
    Chaque construction attendue par une question (« item ») est vérifiée en continu : le champ masqué que lit le
    moteur du gabarit reçoit « juste », « faux » ou rien (rien de tracé) ; la note et les modes restent ceux du
    gabarit. Une fois la question corrigée, sa correction se superpose à la feuille.
+
+   Une feuille peut porter des graphes (cinématique analytique : x(t), v(t), γ(t)…) : la position du pointeur s'y
+   lit en unités physiques, les nœuds du quadrillage attirent le pointeur, un point se place aussi par ses
+   coordonnées, et l'outil « Courbe » trace une courbe lissée par les points posés.
    ===================================================================================================== */
 (function () {
   "use strict";
@@ -86,10 +90,55 @@
     return [add(p, mul(d, t0)), add(p, mul(d, t1))];
   }
 
+  /* Courbe passant par des points : interpolation cubique d'Hermite (pentes de Fritsch-Carlson, sans dépassement)
+     lorsque les abscisses croissent — graphe d'une fonction du temps —, ligne brisée sinon. Les pentes intérieures et
+     extrêmes sont exactes pour une parabole : des points calculés sur x = ½γt² + v0·t + x0 donnent la parabole. */
+  function lisser(pts, lisse) {
+    var n = pts.length, i;
+    if (!lisse || n < 3) return pts.slice();
+    for (i = 1; i < n; i++) if (pts[i][0] - pts[i - 1][0] < 1e-6) return pts.slice();
+    var h = [], d = [], m = [];
+    for (i = 0; i < n - 1; i++) { h[i] = pts[i + 1][0] - pts[i][0]; d[i] = (pts[i + 1][1] - pts[i][1]) / h[i]; }
+    function signe(x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); }
+    for (i = 1; i < n - 1; i++) {
+      if (d[i - 1] * d[i] <= 0) { m[i] = 0; continue; }
+      m[i] = (h[i] * d[i - 1] + h[i - 1] * d[i]) / (h[i - 1] + h[i]);
+      var lim = 3 * Math.min(Math.abs(d[i - 1]), Math.abs(d[i]));
+      if (Math.abs(m[i]) > lim) m[i] = signe(m[i]) * lim;
+    }
+    function bout(h0, h1, d0, d1) {
+      var v = ((2 * h0 + h1) * d0 - h0 * d1) / (h0 + h1);
+      if (signe(v) !== signe(d0)) return 0;
+      if (signe(d0) !== signe(d1) && Math.abs(v) > 3 * Math.abs(d0)) return 3 * d0;
+      return v;
+    }
+    m[0] = bout(h[0], h[1], d[0], d[1]);
+    m[n - 1] = bout(h[n - 2], h[n - 3], d[n - 2], d[n - 3]);
+    var out = [pts[0]];
+    for (i = 0; i < n - 1; i++) {
+      var k = Math.max(4, Math.ceil(dist(pts[i], pts[i + 1]) / 1.2));
+      for (var j = 1; j <= k; j++) {
+        var t = j / k, t2 = t * t, t3 = t2 * t;
+        var y = (2 * t3 - 3 * t2 + 1) * pts[i][1] + (t3 - 2 * t2 + t) * h[i] * m[i] + (-2 * t3 + 3 * t2) * pts[i + 1][1] + (t3 - t2) * h[i] * m[i + 1];
+        out.push([pts[i][0] + t * h[i], y]);
+      }
+    }
+    return out;
+  }
+  function distPoly(p, L) {
+    var d = Infinity;
+    for (var i = 0; i < L.length - 1; i++) d = Math.min(d, distSeg(p, L[i], L[i + 1]));
+    return L.length === 1 ? dist(p, L[0]) : d;
+  }
+  function cheminSVG(L) {
+    return L.map(function (q, i) { return (i ? "L" : "M") + n2(q[0]) + "," + n2(q[1]); }).join("");
+  }
+
   // ------------------------------------------------------------------ écriture
   function fr(x, d) { return x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/^-/, "−"); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function n2(x) { return Math.round(x * 100) / 100; }
+  function lireNb(s) { var v = parseFloat(String(s).replace(/\s/g, "").replace(",", ".").replace(/[−–]/g, "-")); return isFinite(v) ? v : null; }
   /* nom d'un vecteur ou d'un point, ramené à sa forme compacte : « V(A∈4/0) », « VA4/0 », « A∈4/0 » → « a40 » */
   function nomNorm(s) {
     var c = String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -150,6 +199,7 @@
     this.figPts = (cfg.pts || []).map(function (q) { return { p: [q[1], q[2]], nom: q[0] }; });
     this.figCourbes = (cfg.lignes || []).map(function (l) { return { k: "L", p: [l[0], l[1]], d: unit([l[2], l[3]]), t0: -1e9, t1: 1e9, fixe: true }; })
       .concat((cfg.cercles || []).map(function (c) { return { k: "C", c: [c[0], c[1]], r: c[2], fixe: true }; }));
+    this.graphes = cfg.graphes || []; this.gActif = 0;
 
     // ---------- barre d'outils
     $$("[data-outil]", root).forEach(function (b) {
@@ -195,9 +245,31 @@
         if (!o || o.t !== "ve" || !(L > 0)) return;
         self.memo(); o.b = add(o.a, mul(unit(sub(o.b, o.a)), L)); self.changer();
       });
+      var lis = $(".at-p-lisse", this.prop);
+      if (lis) lis.addEventListener("change", function () {
+        if (!self.sel || self.sel.t !== "pl") return; self.memo(); self.sel.lisse = this.checked; self.changer();
+      });
       $(".at-p-suppr", this.prop).addEventListener("click", function () {
         if (!self.sel) return; self.memo(); self.supprimer(self.sel); self.sel = null; self.changer();
       });
+    }
+
+    // ---------- graphes : placer un point par ses coordonnées
+    this.coord = $(".at-coord", root);
+    if (this.coord) {
+      var sg = $(".at-c-g", this.coord);
+      if (sg) sg.addEventListener("change", function () { self.gActif = +this.value; self.libellerCoord(); });
+      this.coord.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var G = self.graphes[self.gActif], t = lireNb($(".at-c-x", self.coord).value), y = lireNb($(".at-c-y", self.coord).value);
+        var m = $(".at-c-msg", self.coord);
+        if (!G || t === null || y === null) { m.textContent = "Saisis les deux coordonnées (nombres)."; return; }
+        m.textContent = "";
+        self.placerExact(self.versFeuilleG(G, t, y));
+      });
+      var fin_ = $(".at-c-fin", this.coord);
+      if (fin_) fin_.addEventListener("click", function () { if (self.tool === "courbe" && self.step.length >= 2) self.finir(); });
+      this.libellerCoord();
     }
 
     // ---------- souris, doigt, stylet
@@ -318,6 +390,43 @@
     if (!on) this.zone.scrollIntoView({ block: "start" });
   };
 
+  // ------------------------------------------------------------------ graphes
+  P.grapheSous = function (p) {
+    for (var i = 0; i < this.graphes.length; i++) {
+      var b = this.graphes[i].box;
+      if (p[0] >= b[0] - 3 && p[0] <= b[2] + 3 && p[1] >= b[1] - 3 && p[1] <= b[3] + 3) return i;
+    }
+    return -1;
+  };
+  P.phys = function (G, p) { return [(p[0] - G.o[0]) / G.kx, (G.o[1] - p[1]) / G.ky]; };
+  P.versFeuilleG = function (G, t, y) { return [G.o[0] + t * G.kx, G.o[1] - y * G.ky]; };
+  P.lireG = function (G, p) {
+    var q = this.phys(G, p);
+    return G.nx + " = " + fr(q[0], G.dx) + " " + G.ux + " · " + G.ny + " = " + fr(q[1], G.dy) + " " + G.uy;
+  };
+  P.libellerCoord = function () {
+    var G = this.graphes[this.gActif];
+    if (!this.coord || !G) return;
+    $(".at-c-lx", this.coord).textContent = G.nx + " (" + G.ux + ")";
+    $(".at-c-ly", this.coord).textContent = G.ny + " (" + G.uy + ")";
+    var sg = $(".at-c-g", this.coord); if (sg) sg.value = String(this.gActif);
+  };
+  /* point donné par ses coordonnées : il compte comme un clic exact (sans accrochage) de l'outil en cours */
+  P.placerExact = function (q) {
+    var outilsPt = ["point", "segment", "droite", "vecteur", "courbe", "mesure", "cercle"];
+    if (outilsPt.indexOf(this.tool) < 0) this.choisir("point");
+    var s = this.step;
+    if (this.tool === "courbe" && s.length >= 2 && dist(q, s[s.length - 1]) < 1e-6) { this.finir(); return; }
+    s.push(q);
+    var besoin = { point: 1, droite: 2, segment: 2, vecteur: 2, cercle: 2, mesure: 2 }[this.tool];
+    if (besoin && s.length >= besoin) this.finir();
+    else { this.aide(this.tool === "courbe" ? this.aideCourbe() : undefined); this.rendreTmp(); }
+  };
+  P.aideCourbe = function () {
+    var n = this.step.length;
+    return n ? "Courbe : " + n + " point" + (n > 1 ? "s" : "") + (n >= 2 ? " — touche à nouveau le dernier point (ou Entrée) pour terminer" : "") : "";
+  };
+
   // ------------------------------------------------------------------ outils
   var AIDES = {
     main: ["Fais glisser la feuille pour la déplacer ; touche un tracé pour le choisir (nom, longueur, suppression)."],
@@ -331,10 +440,13 @@
     cercle: ["Centre du cercle.", "Un point du cercle (le rayon s'affiche)."],
     compas: ["Écartement du compas : première pointe.", "Écartement du compas : seconde pointe.", "Pique le compas au centre du cercle à tracer."],
     mesure: ["Premier point de la mesure.", "Second point : la distance et l'angle s'affichent."],
+    courbe: ["Pose les points de la courbe un à un (ils s'accrochent aux nœuds du quadrillage) ; touche à nouveau le dernier point pour terminer.",
+             "Point suivant de la courbe ; touche à nouveau le dernier point (ou Entrée) pour terminer."],
     texte: ["Touche l'endroit du texte, puis écris-le."],
     gomme: ["Touche ou balaie un tracé pour l'effacer (tes tracés seulement, jamais la figure)."]
   };
   P.choisir = function (t) {
+    if (this.tool === "courbe" && this.step.length >= 2 && t !== "courbe") this.finir();
     this.tool = t; this.step = []; this.mesure = null;
     if (t !== "main") this.selectionner(null);
     $$("[data-outil]", this.root).forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-outil") === t ? "true" : "false"); });
@@ -362,6 +474,7 @@
       if (o.t === "pt") out.push({ p: o.p, nom: o.nom });
       else if (o.t === "sg" || o.t === "ve") { out.push({ p: o.a }); out.push({ p: o.b }); }
       else if (o.t === "ci") out.push({ p: o.c });
+      else if (o.t === "pl") o.pts.forEach(function (q) { out.push({ p: q }); });
     });
     return out;
   };
@@ -395,6 +508,14 @@
       if (d < r && (!best || d < best.d)) best = { p: this.cacheInter[i], d: d, type: "intersection" };
     }
     if (best) return best;
+    var gi = this.grapheSous(p);
+    if (gi >= 0) {  // nœuds du quadrillage d'un graphe : attirent le pointeur de près seulement
+      var G = this.graphes[gi], ph = this.phys(G, p);
+      var n = this.versFeuilleG(G, Math.round(ph[0] / G.px) * G.px, Math.round(ph[1] / G.py) * G.py);
+      var rg = Math.min(r, 0.3 * Math.min(G.px * G.kx, G.py * G.ky));
+      d = dist(p, n);
+      if (d < rg) return { p: n, d: d, type: "grille" };
+    }
     for (i = 0; i < this.cacheCourbes.length; i++) {
       var q = surCourbe(p, this.cacheCourbes[i]);
       d = dist(p, q);
@@ -421,6 +542,7 @@
       else if (o.t === "sg" || o.t === "ve") d = distSeg(p, o.a, o.b);
       else if (o.t === "ci") d = Math.abs(dist(p, o.c) - o.r);
       else if (o.t === "tx") d = Math.max(0, dist(p, o.p) - r);
+      else if (o.t === "pl") d = distPoly(p, lisser(o.pts, o.lisse));
       if (d < r && (!best || d < best.d)) best = { o: o, d: d };
     });
     return best && best.o;
@@ -465,6 +587,13 @@
     this.hover = { brut: p, s: this.tool === "main" || this.tool === "gomme" || this.tool === "texte" ? null : this.accrocher(p) };
     if (this.attendLigne()) this.hover.ligne = this.ligneSous(p);
     var m = this.lecture(this.hover.s ? this.hover.s.p : p);
+    if (m === null && this.graphes.length) {
+      var gi = this.grapheSous(this.hover.s ? this.hover.s.p : p);
+      if (gi >= 0) {
+        m = this.lireG(this.graphes[gi], this.hover.s ? this.hover.s.p : p);
+        if (gi !== this.gActif && !this.step.length) { this.gActif = gi; this.libellerCoord(); }
+      } else m = "";
+    }
     if (m !== null) this.aide(m);
     this.rendreTmp();
   };
@@ -473,7 +602,13 @@
   };
   /* mesure en direct pendant le tracé */
   P.lecture = function (p) {
-    var s = this.step;
+    var s = this.step, gi = this.graphes.length ? this.grapheSous(p) : -1;
+    if (gi >= 0 && s.length && Array.isArray(s[s.length - 1])) {  // sur un graphe : coordonnées et pente
+      var G = this.graphes[gi], a = this.phys(G, s[s.length - 1]), b = this.phys(G, p), txt = this.lireG(G, p);
+      if ((this.tool === "segment" || this.tool === "droite" || this.tool === "courbe") && Math.abs(b[0] - a[0]) > 1e-9 && G.up)
+        txt += " · pente : " + fr((b[1] - a[1]) / (b[0] - a[0]), 2) + " " + G.up;
+      return txt;
+    }
     if ((this.tool === "vecteur" || this.tool === "segment" || this.tool === "mesure") && s.length === 1)
       return "Longueur : " + fr(dist(s[0], p), 1) + " mm · angle : " + fr(ang(sub(p, s[0])), 1) + "°";
     if (this.tool === "cercle" && s.length === 1) return "Rayon : " + fr(dist(s[0], p), 1) + " mm";
@@ -494,10 +629,12 @@
       return;
     }
     var q = this.accrocher(p).p;
+    if (this.tool === "courbe" && s.length >= 2 && dist(q, s[s.length - 1]) < SNAP_PX / this.k()) { this.finir(); return; }
+    if (this.tool === "courbe" && s.length && dist(q, s[s.length - 1]) < 1e-6) return;
     s.push(q);
-    var besoin = { point: 1, droite: 2, segment: 2, vecteur: 2, perp: 2, para: 2, proj: 2, cercle: 2, compas: 3, mesure: 2 }[this.tool];
+    var besoin = { point: 1, droite: 2, segment: 2, vecteur: 2, perp: 2, para: 2, proj: 2, cercle: 2, compas: 3, mesure: 2, courbe: Infinity }[this.tool];
     if (s.length >= besoin) this.finir();
-    else { this.aide(); this.rendreTmp(); }
+    else { this.aide(this.tool === "courbe" ? this.aideCourbe() : undefined); this.rendreTmp(); }
   };
   P.finir = function () {
     var s = this.step, t = this.tool, o = null;
@@ -506,6 +643,7 @@
     else if (t === "droite" && dist(s[0], s[1]) > 1e-6) o = this.ajouter({ t: "dr", p: s[0], d: unit(sub(s[1], s[0])) });
     else if (t === "segment" && dist(s[0], s[1]) > 1e-6) o = this.ajouter({ t: "sg", a: s[0], b: s[1] });
     else if (t === "vecteur" && dist(s[0], s[1]) > 1e-6) o = this.ajouter({ t: "ve", a: s[0], b: s[1], nom: "" });
+    else if (t === "courbe" && s.length >= 2) o = this.ajouter({ t: "pl", pts: s, lisse: true });
     else if (t === "perp") o = this.ajouter({ t: "dr", p: s[1], d: unit(perp(s[0].d)) });
     else if (t === "para") o = this.ajouter({ t: "dr", p: s[1], d: unit(s[0].d) });
     else if (t === "proj") {
@@ -530,7 +668,11 @@
     if (o.t === "sg") return "Segment de " + fr(dist(o.a, o.b), 1) + " mm";
     if (o.t === "ci") return "Cercle de rayon " + fr(o.r, 1) + " mm";
     if (o.t === "dr") return "Droite, angle " + fr(((ang(o.d) % 180) + 180) % 180, 1) + "°";
-    if (o.t === "pt") return "Point" + (o.nom ? " " + o.nom : "");
+    if (o.t === "pt") {
+      var gi = this.grapheSous(o.p);
+      return "Point" + (o.nom ? " " + o.nom : "") + (gi >= 0 ? " (" + this.lireG(this.graphes[gi], o.p).replace(" · ", " ; ") + ")" : "");
+    }
+    if (o.t === "pl") return "Courbe de " + o.pts.length + " points" + (o.lisse ? ", lissée" : ", ligne brisée");
     return "";
   };
   P.saisirTexte = function (p) {
@@ -560,6 +702,8 @@
         $(".at-p-nomw", pr).hidden = !nomOk;
         $(".at-p-nom", pr).value = o.nom || "";
         $(".at-p-longw", pr).hidden = o.t !== "ve";
+        var lw = $(".at-p-lissew", pr);
+        if (lw) { lw.hidden = o.t !== "pl"; if (o.t === "pl") $(".at-p-lisse", pr).checked = !!o.lisse; }
         if (o.t === "ve") $(".at-p-long", pr).value = n2(dist(o.a, o.b)).toString().replace(".", ",");
         if (focusNom && nomOk && window.matchMedia("(pointer:fine)").matches) { /* le nom se saisit tout de suite au clavier */ }
       }
@@ -568,7 +712,7 @@
   };
 
   // ------------------------------------------------------------------ clavier : curseur et raccourcis
-  var RACC = { v: "vecteur", d: "droite", s: "segment", p: "point", e: "perp", a: "para", o: "proj", c: "cercle", k: "compas", m: "mesure", t: "texte", g: "gomme", h: "main" };
+  var RACC = { v: "vecteur", d: "droite", s: "segment", p: "point", e: "perp", a: "para", o: "proj", c: "cercle", k: "compas", m: "mesure", t: "texte", g: "gomme", h: "main", u: "courbe" };
   P.clavier = function (e) {
     if (e.target !== this.svg) return;
     var pas = e.shiftKey ? 0.2 : 1, c = this.curseur || [this.vue.x + this.vue.w / 2, this.vue.y + this.vue.h / 2];
@@ -576,6 +720,7 @@
     if (dirs[e.key]) {
       e.preventDefault(); this.curseur = add(c, dirs[e.key]); this.survol(this.curseur); return;
     }
+    if (e.key === "Enter" && this.tool === "courbe" && this.step.length >= 2 && !this.curseur) { e.preventDefault(); this.finir(); return; }
     if ((e.key === "Enter" || e.key === " ") && !e.ctrlKey) {
       e.preventDefault();
       if (e.key === " " && !this.curseur) { this.espace = true; return; }
@@ -587,7 +732,8 @@
     if ((e.key === "Delete" || e.key === "Backspace") && this.sel) { e.preventDefault(); this.memo(); this.supprimer(this.sel); this.sel = null; this.changer(); return; }
     if (e.key === "+" || e.key === "=") { e.preventDefault(); this.zoomer(1.25); return; }
     if (e.key === "-") { e.preventDefault(); this.zoomer(1 / 1.25); return; }
-    if (!e.ctrlKey && !e.metaKey && !e.altKey && RACC[e.key.toLowerCase()]) { e.preventDefault(); this.choisir(RACC[e.key.toLowerCase()]); }
+    var o_ = RACC[e.key.toLowerCase()];
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && o_ && $('[data-outil="' + o_ + '"]', this.root)) { e.preventDefault(); this.choisir(o_); }
   };
 
   // ------------------------------------------------------------------ rendu
@@ -610,6 +756,8 @@
       } else if (o.t === "ci") s += '<circle cx="' + n2(o.c[0]) + '" cy="' + n2(o.c[1]) + '" r="' + n2(o.r) + '" fill="none" stroke="' + c + '" stroke-width="' + (choisi ? 2.6 : 1.2) + '" class="' + cls + '"/>';
       else if (o.t === "pt") { s += svgCroix(o.p, c, k, choisi ? 2.6 : 1.8); if (o.nom) s += svgTexte([o.p[0] + m, o.p[1] - m], o.nom, c, k, 14); }
       else if (o.t === "tx") s += svgTexte(o.p, o.s, c, k, 15, choisi ? "at-choisi" : "");
+      else if (o.t === "pl") s += '<path d="' + cheminSVG(lisser(o.pts, o.lisse)) + '" fill="none" stroke="' + c + '" stroke-width="' + (choisi ? 3.4 : 2.2) +
+        '" stroke-linejoin="round" stroke-linecap="round" class="' + cls + '"/>' + (choisi ? o.pts.map(function (q) { return svgCroix(q, c, k, 1.4); }).join("") : "");
     });
     this.L.cons.innerHTML = s;
     // correction des questions déjà corrigées
@@ -628,6 +776,8 @@
       else if (q.t === "ci") s += '<circle cx="' + n2(q.c[0]) + '" cy="' + n2(q.c[1]) + '" r="' + n2(q.r) + '" fill="none" stroke="' + c + '" stroke-width="1.4" stroke-dasharray="' + (dash || "") + '" class="at-c"/>';
       else if (q.t === "pt") { s += svgCroix(q.p, c, k, 2.2); if (q.lab) s += svgTexte([q.p[0] + 6 / k, q.p[1] - 6 / k], q.lab, c, k, 15, "at-c"); }
       else if (q.t === "tx") s += svgTexte(q.p, q.s, c, k, 14, "at-c", q.ancre);
+      else if (q.t === "pl") s += '<path d="' + cheminSVG(q.pts) + '" fill="none" stroke="' + c + '" stroke-width="' + (aide ? 1.4 : 2.6) +
+        '" stroke-dasharray="' + (dash || "") + '" stroke-linejoin="round" class="at-c"/>';
     });
     return s;
   };
@@ -639,6 +789,7 @@
       if (t === "droite") { var g = clipLigne(st[0], unit(sub(p, st[0])), X0, Y0, X1, Y1); if (g && dist(p, st[0]) > 1e-6) s += svgLigne(g[0], g[1], c, 1, "at-apercu", "4 3"); }
       else if (t === "segment" || t === "mesure") s += svgLigne(st[0], p, t === "mesure" ? "#555" : c, 1.4, "at-apercu", t === "mesure" ? "3 3" : "");
       else if (t === "vecteur") s += svgFleche(st[0], p, c, 2.2, k, "at-apercu");
+      else if (t === "courbe") s += '<path d="' + cheminSVG(lisser(st.concat([p]), true)) + '" fill="none" stroke="' + c + '" stroke-width="1.8" stroke-dasharray="5 3" class="at-apercu"/>';
       else if (t === "cercle") s += '<circle cx="' + n2(st[0][0]) + '" cy="' + n2(st[0][1]) + '" r="' + n2(dist(st[0], p)) + '" fill="none" stroke="' + c + '" stroke-dasharray="4 3" class="at-apercu"/>';
       else if (t === "compas" && st.length === 1) s += svgLigne(st[0], p, "#555", 1.2, "at-apercu", "3 3");
       else if (t === "compas" && st.length === 2) s += '<circle cx="' + n2(p[0]) + '" cy="' + n2(p[1]) + '" r="' + n2(dist(st[0], st[1])) + '" fill="none" stroke="' + c + '" stroke-dasharray="4 3" class="at-apercu"/>';
@@ -677,6 +828,9 @@
        dir : une droite (ou un segment, un vecteur) passant par o, de direction d ; tolA (°)
        pt  : un point placé en p (tolP en mm), nommé ou non
        ci  : un cercle de centre c et de rayon r
+       courbe : la portion de courbe d'un graphe (g : numéro du graphe) échantillonnée par pts, entre les abscisses de
+                feuille x0 et x1 ; elle est juste si chaque échantillon est à moins de tol (mm) de l'un des tracés
+                (segment, droite, vecteur, courbe) et si les courbes tracées sur cet intervalle ne s'en écartent pas.
      Un tracé nommé ne compte que pour l'item du même nom ; un tracé sans nom compte pour tout item qui lui convient. */
   P.evaluerItem = function (it) {
     var tolO = it.tolO || 1.5, attendu = nomNorm(it.nom);
@@ -726,7 +880,50 @@
       var okc = cands.some(function (o) { return Math.abs(o.r - it.r) <= Math.max(1, 0.03 * it.r); });
       return { etat: "present", ok: okc, diag: okc ? "" : "rayon à revoir" };
     }
+    if (it.k === "courbe") return this.evaluerCourbe(it);
     return { etat: "vide" };
+  };
+  /* tracés de l'élève sur un graphe, en lignes brisées (droites coupées au cadre du graphe) */
+  P.lignesGraphe = function (G) {
+    var b = G.box, out = [];
+    this.objs.forEach(function (o) {
+      if (o.t === "pl") out.push({ L: lisser(o.pts, o.lisse), pl: true });
+      else if (o.t === "sg" || o.t === "ve") out.push({ L: [o.a, o.b] });
+      else if (o.t === "dr") { var c = clipLigne(o.p, o.d, b[0] - 2, b[1] - 2, b[2] + 2, b[3] + 2); if (c) out.push({ L: c }); }
+    });
+    return out;
+  };
+  P.evaluerCourbe = function (it) {
+    var G = this.graphes[it.g], b = G.box, tol = it.tol || 2, x0 = it.x0 + 0.5, x1 = it.x1 - 0.5, self = this;
+    var lignes = this.lignesGraphe(G);
+    function dans(q) { return q[0] > x0 && q[0] < x1 && q[1] >= b[1] - 2 && q[1] <= b[3] + 2; }
+    // un tracé est « repéré » s'il passe dans la bande du graphe correspondant à l'intervalle de temps de l'item
+    var present = lignes.some(function (l) {
+      for (var i = 0; i < l.L.length - 1; i++) {
+        var a = l.L[i], c = l.L[i + 1], n = Math.max(1, Math.ceil(dist(a, c) / 1.5));
+        for (var j = 0; j <= n; j++) if (dans(add(a, mul(sub(c, a), j / n)))) return true;
+      }
+      return l.L.length === 1 && dans(l.L[0]);
+    });
+    if (!present) return { etat: "vide" };
+    var pire = null;
+    it.pts.forEach(function (q) {
+      var d = Infinity;
+      lignes.forEach(function (l) { d = Math.min(d, distPoly(q, l.L)); });
+      if (d > tol && (!pire || d > pire.d)) pire = { d: d, q: q };
+    });
+    if (pire) return { etat: "present", ok: false, diag: "la courbe attendue n'est pas suivie vers " + G.nx + " = " + fr(self.phys(G, pire.q)[0], G.dx) + " " + G.ux + (isFinite(pire.d) && pire.d < 60 ? " (écart de " + fr(pire.d, 1) + " mm sur la feuille)" : "") };
+    var ecart = null;
+    lignes.forEach(function (l) {
+      if (!l.pl) return;
+      l.L.forEach(function (q) {
+        if (!dans(q)) return;
+        var d = distPoly(q, it.pts);
+        if (d > 1.6 * tol && (!ecart || d > ecart.d)) ecart = { d: d, q: q };
+      });
+    });
+    if (ecart) return { etat: "present", ok: false, diag: "ta courbe s'écarte de la courbe attendue vers " + G.nx + " = " + fr(self.phys(G, ecart.q)[0], G.dx) + " " + G.ux + " (écart de " + fr(ecart.d, 1) + " mm)" };
+    return { etat: "present", ok: true };
   };
   P.evaluer = function (initial) {
     var self = this;
@@ -873,5 +1070,5 @@
   window.addEventListener("beforeprint", function () { ateliers.forEach(function (a) { a.avantImpression(); }); });
   window.addEventListener("afterprint", function () { ateliers.forEach(function (a) { a.apresImpression(); }); });
   window.__ateliers__ = ateliers;
-  window.__atelierGeo__ = { nomNorm: nomNorm, inter: inter, clipLigne: clipLigne, ecartV: ecartV, ecartD: ecartD };
+  window.__atelierGeo__ = { nomNorm: nomNorm, inter: inter, clipLigne: clipLigne, ecartV: ecartV, ecartD: ecartD, lisser: lisser };
 })();

@@ -2,9 +2,11 @@
 
 ## Construction reprise du dépôt « Chaîne fonctionnelle »
 
-**Sources** : le chapitre « Cinématique » (13 pages : généralités, cinématique du solide, cinématique du point) et la
-séquence « Cinématique graphique » (23 pages : cours en sept parties et sept exercices avec leurs documents réponses),
-fournis en PDF. Les PDF ne sont pas versionnés : `outils/preparer-images.sh` en extrait les fonds et photos utiles dans
+**Sources** : le chapitre « Cinématique » (13 pages : généralités, cinématique du solide, cinématique du point), la
+séquence « Cinématique graphique » (23 pages : cours en sept parties et sept exercices avec leurs documents réponses)
+et la séquence « Cinématique analytique » (16 pages : introduction, analyse de quatre mouvements, MRU et ses
+applications, MRUV et trois études de systèmes, mouvement circulaire, MCU et deux applications), fournis en PDF. Les
+PDF ne sont pas versionnés : `outils/preparer-images.sh` en extrait les fonds, dessins et photos utiles dans
 `src/images/originaux/`.
 
 **Dépôt non modifié** : Chaîne fonctionnelle, consulté pour la construction (générateur, gabarit, accueil, pastilles,
@@ -18,8 +20,8 @@ aux constructions).
 **Accueil** (`index.html`), sur le modèle de Chaîne fonctionnelle : en-tête et montage d'illustration (quatre feuilles
 corrigées : ellipsographe, embiellage, pompe, chargeur), puis les rubriques **Les cours** (Cours 1, pastille verte
 Analytique ; Cours 2, pastille bleue Graphique), **L'atelier de construction**, **Activités de cinématique
-analytique** (une carte « En cours d'édition »), **Activités de résolution graphique** (sept cartes) et **Études de
-cas** (une carte « En cours d'édition »). La logique de numérotation reste celle des dépôts précédents : le premier
+analytique** (quatre cartes : activités 1.1 à 1.4), **Activités de résolution graphique** (sept cartes) et **Études
+de cas** (une carte « En cours d'édition »). La logique de numérotation reste celle des dépôts précédents : le premier
 chiffre d'une activité donne sa partie (1 analytique, 2 graphique). Toutes les cartes ont la même taille, une
 vignette photographiée dans la page (`outils/captures.js`), 3 à 5 mots-clés et un bouton (test navigateur).
 
@@ -33,7 +35,25 @@ vignette photographiée dans la page (`outils/captures.js`), 3 à 5 mots-clés e
   avec ses vecteurs position, vitesse et accélération ; quatre mouvements plans animés et un jeu de classement ;
   répartition des vitesses sur une pale d'hélice (N et position réglables, 104,7 m/s au bout pour 1 000 tr/min, comme
   dans le chapitre) ; simulateur du mouvement rectiligne uniformément varié (x(t), v(t), a(t), trois situations
-  types) ; rotation du point avec V, Γn, Γt et Γ. Cartes « L'essentiel à retenir », quiz de 10 questions.
+  types) ; rotation du point avec V, Γn, Γt et Γ. Cartes « L'essentiel à retenir », quiz.
+- **Cours 1, enrichi par la séquence « Cinématique analytique »** (`src/cours_mouvements.py`) : onze sections.
+  - Section 3 : abscisse curviligne et équation horaire, vitesse instantanée (v = dx/dt), accélérations moyenne et
+    instantanée, composantes tangentielle et normale dans le repère local (M, t, n), n orienté vers l'extérieur
+    (Γt = dv/dt, Γn = −v²/R), remarques sur la translation rectiligne et la rotation.
+  - Section 4 (nouvelle), **Analyse de mouvements** : les quatre mouvements de la séquence dans un laboratoire (positions
+    aux instants de l'énoncé, trajectoire, vecteurs vitesse et accélération animés, tableau des composantes et des
+    normes, observations), suivis de leurs questions en exercices auto-corrigés.
+  - Section 8 (nouvelle), **MRU** : définition, caractéristiques, vecteurs, graphes, et les applications de la séquence
+    (mouvements 1 à 4, graphes redessinés) en exercices auto-corrigés.
+  - Section 9, **MRUV** : définition, équations, vecteurs, graphes, distance parcourue (aire sous v(t)), écriture des
+    équations d'une phase (origine des temps en début de phase ou repère absolu), simulateur, renvoi aux activités 1.1
+    à 1.3.
+  - Section 10, **Mouvement circulaire** : abscisses curviligne et angulaire (s = R·θ, v = R·ω), MCU (θ = ωt + θ0,
+    V = Rθ'·t, Γ = −Rθ'²·n), MCUV, simulateur de rotation, application « transmission de puissance » en exercices,
+    renvoi à l'activité 1.4.
+  - Quiz porté à 17 questions. Les **exercices d'application** (27) sont vérifiés par le moteur de correction du
+    gabarit (valeurs avec unité, coefficients) : l'élève vérifie autant de fois qu'il veut, puis peut afficher la
+    solution ; ils ne sont pas notés.
 - **Cours 2 — Cinématique graphique** (`?ex=cours-cinematique-graphique`) : séquence, parties 1 à 7, et partie B.III
   du chapitre (mouvement plan, équiprojectivité, CIR), qui y est regroupée. Dix sections : carte des relations entre
   accélération, effort, vitesse, géométrie et matériaux ; la pièce de la séquence animée dans les cinq mouvements,
@@ -70,6 +90,19 @@ Environnement de construction commun aux activités, au cours 2 (démonstrations
   construction attendue (tracés d'aide en orange, résultat en rouge) se superpose à la feuille, et chaque élément faux
   dit pourquoi (direction, longueur, distance du point, non tracé). En examen, rien n'est corrigé avant la remise.
 
+## Les graphes dans l'atelier (activités analytiques)
+
+Une feuille peut porter des graphes (`Feuille.graphe`) : axes gradués en unités physiques, quadrillage fin et épais.
+Sous la feuille, la position du pointeur se lit en unités physiques (t = 1,50 s · x = 86,0 mm) et, pendant le tracé
+d'un segment, sa **pente** dans l'unité du graphe dérivé (mm/s sur un graphe des espaces, m/s² sur un graphe des
+vitesses) ; les nœuds du quadrillage attirent le pointeur de près ; « Placer un point » pose un point par ses
+coordonnées avec l'outil en cours. L'outil **Courbe** trace une courbe par les points posés, lissée par interpolation
+cubique d'Hermite (pentes de Fritsch-Carlson, sans dépassement), exacte pour un arc de parabole : trois points calculés
+suffisent ; une case la rend brisée. Une portion de courbe attendue (`IT_COURBE`) est échantillonnée tous les 2,5 mm
+environ ; elle est juste si chaque échantillon est à moins de 2 mm d'un tracé de l'élève et si ses courbes ne s'en
+écartent pas sur l'intervalle. Le diagnostic donne l'instant où la courbe n'est pas suivie et l'écart sur la feuille.
+La barre d'outils des graphes est réduite (point, segment, droite, courbe, mesure, texte, gomme).
+
 ## Les activités : un exercice = une activité unique
 
 Les sept exercices de la séquence deviennent les activités 2.1 à 2.7, chacune avec ses deux modes, son chronomètre,
@@ -92,6 +125,18 @@ de présentation DP1 accompagnent chaque activité. Les valeurs attendues sont c
 | 2.5 Portail à vis | redessinée, 1:10 | V(C) = 0,06 m/s ; V(B) ≈ 0,079 m/s ; V(M) ≈ 0,24 m/s ; ω ≈ 0,159 rad/s ; ≈ 308 tours du moteur |
 | 2.6 Chargeur Bobcat S185 | fond d'origine calé | V(C∈5/4) = 0,181 m/s ; V(C∈5/0) ≈ 0,20 m/s ; V(H∈1/0) ≈ 0,76 m/s ≤ 1,2 m/s |
 | 2.7 Suspension du VTT | trois fonds d'origine | V(F) ≈ 16,5 m/s ; V(D) ≈ 19,6 m/s (puis 20 donnés) ; V(C) ≈ 14,2 m/s (puis 15 donnés) ; V(C∈S4/S5) ≈ 10,6 m/s ≤ 15 m/s |
+
+**Activités de cinématique analytique** (séquence « Cinématique analytique », une étude de système = une activité) :
+formulaire DT1 propre (MRU, MRUV, mouvement circulaire, mode d'emploi des graphes), consignes propres, et un quatrième
+type de réponse, les **cases numériques** insérées dans une équation ou un tableau (coefficients d'une équation horaire,
+valeurs à plusieurs instants), un point par case, sans unité (écrite à côté).
+
+| Activité | Parties et feuilles | Résultats principaux |
+|---|---|---|
+| 1.1 Imprimante 3D | une partie, 50 min ; graphes x(t), v(t), γ(t) à tracer | x = 16t² + 50 ; v(2) = 64 mm/s ; ralentissement de 0,781 s, γ = −81,92 mm/s², x = −40,96 t'² + 64 t' + 114 jusqu'à 139 mm ; arrêt jusqu'à 3,28 s |
+| 1.2 Vanne d'admission d'air | deux parties, 45 min ; sans feuille | Vmax = 3,125 mm/s ; a1 = 12,5 mm/s², d1 = 0,391 mm ; a3 = −10,625 mm/s², d3 = 0,4125 mm ; d4 = 0,5 mm ; a5 = −10 mm/s², d5 = 0,05 mm ; d2 = 1,647 mm en 0,527 s ; durée totale 1,577 s |
+| 1.3 Automotrice à grande vitesse | deux parties, 50 min ; diagrammes a(t) et v(t) à tracer | t1 = 20 s, x(t1) = 100 m ; v02 = 3 m/s, x02 = −30 m, t2 = 105,7 s, x(t2) = 2 242,9 m ; t3 = 405,7 s (6 min 46 s), x(t3) = 23,24 km |
+| 1.4 Moteur électrique | une partie, 35 min ; θ(t) donné, ω(t) à tracer | ω1 = 10π = 31,42 rad/s (300 tr/min) ; θ = 20π en phase 2 ; ω3 = −20π ; θ(t') = −20π t' + 20π, soit θ(t) = −20π t + 220π |
 
 **Feuilles** : les schémas cinématiques (arbre, embiellage, pompe, ellipsographe, portail) sont redessinés en SVG avec
 la géométrie relevée sur les pages rendues à 300 dpi (`src/mecanismes.py`), ce qui donne des tracés nets à tout zoom et
@@ -128,32 +173,62 @@ une marge à gauche, pour que les vecteurs longs (V(H∈1/0), V(G∈S1/S0)) y ti
   ω = θ / t est précisé (rotation uniforme, θ0 = 0) à côté de ω = dθ/dt ; « Mouvement déccéléré » est corrigé.
 - **Séquence** : « le référentiel choisit », « peut-être différent », « mouvement verticale de va et vient »,
   « à un diamètre », « Echelle » sont corrigés ; le CIR est présenté en général (I1/0) puis sur l'exemple (I2/0).
+- **Séquence analytique, imprimante 3D** : « l'axe x ralentit sur les 25 derniers millimètres » est lu comme un
+  ralentissement **uniforme** jusqu'à l'arrêt (MRUV), ce que demandent les équations de la phase 2 ; l'axe du graphe
+  des accélérations, gradué « γt (mm/s) », est en mm/s² ; les graphes sont redessinés à l'échelle sur 3,5 s (les trois
+  phases) au lieu de 2 s, avec des graduations régulières. Une question sur la nature des trois phases est ajoutée
+  (Q7 c).
+- **Vanne** : « le boisseau est régit » devient « est régi ». La loi de vitesse est redessinée (allure, comme dans la
+  séquence) ; la question 1 (« montrer que Vmax = 3,125 mm/s ») est découpée en fréquence de rotation (tr/s) puis
+  calcul de Vmax ; l'analyse de chaque phase donne une question de nature (étiquettes) puis les valeurs. Pour une
+  décélération, le signe n'est pas noté (valeur absolue acceptée).
+- **AGV** : la question 1 (tracer le diagramme des vitesses) se traite en dernier, sur une feuille à l'échelle, une
+  fois t1, t2 et t3 calculés ; le diagramme des accélérations à l'échelle, la lecture de la vitesse à 200 s et la
+  signification de l'aire sous v(t) sont ajoutés. La conversion des vitesses en m/s et la position x(t2) sont des
+  étapes ajoutées ; t3 se donne en secondes puis en h/min/s.
+- **Moteur électrique** : « Fonction de ce graphe » devient « En fonction de ce graphe » ; les équations s'écrivent
+  avec π en facteur (cases « coefficient de π ») ; la fréquence de rotation de la phase 1 (300 tr/min) et la nature
+  des phases sont ajoutées.
+- **Transmission de puissance** (application du cours) : « 1650 tr/mn » devient 1 650 tr/min ; la question 2.4
+  (« vitesse angulaire du moteur ») ne peut se calculer qu'en sortie du réducteur, dont le rapport n'est pas donné :
+  elle devient la vitesse angulaire de la poulie motrice (1), 518,4 rad/s, et la solution le signale.
+- **Cours analytique de la séquence** : les blancs du polycopié sont complétés (définitions du MRU, du MRUV, du MCU,
+  équations, vecteurs, graphes) ; « orienté vers l'extérieure » est corrigé ; la composante normale s'écrit
+  Γn = −v²/R avec n orienté vers l'extérieur, comme Γ = −Rθ'²·n dans la partie MCU. Le mouvement 4 de l'analyse et
+  les graphes des applications du MRU n'ont pas d'unités : les réponses correspondantes sont des nombres seuls. Sur le
+  graphe du mouvement 4 (applications du MRU), le point B, lu vers 103 mm, est pris à 100 mm (droite x3 = 10t + 100,
+  confirmée par ses autres points).
 - En-têtes « Nom / Prénom / Date », logo de l'établissement et pieds de page des documents d'origine ne sont pas
   repris (le champ « Nom et prénom » du gabarit les remplace) ; aucune mention de diplôme ou d'épreuve (test).
 
 ## Points signalés sans modification
 
 - **À vérifier** : les photos de l'arbre de transmission et du VTT, et les dessins du chargeur Bobcat et de la
-  suspension, viennent de la séquence fournie (documentation de constructeurs) ; leur publication suppose d'en avoir
-  le droit.
-- Les activités de cinématique analytique et les études de cas sont annoncées « En cours d'édition » : les documents
-  fournis n'en contiennent pas. Le générateur les accueille déjà (activité sans feuille, `"partie": "analytique"`).
-- Poids : `index.html` 2,1 Mio (1,5 Mio d'images).
+  suspension, viennent de la séquence fournie (documentation de constructeurs) ; de même, la photo de l'AGV (Alstom,
+  reprise sans la ligne du logo placée sous la photo dans la séquence), le dessin de la vanne d'air et celui de la
+  transmission viennent de la séquence analytique. Leur publication suppose d'en avoir le droit.
+- Les études de cas sont annoncées « En cours d'édition » : les documents fournis n'en contiennent pas.
+- Poids : `index.html` 2,8 Mio (1,9 Mio d'images).
 
 ## Vérifications effectuées
 
-- `node --test tests/correction.test.js` : 8 tests — gabarit identique à celui du dépôt Chaîne fonctionnelle
-  (empreinte SHA-256) ; configuration (7 activités, une feuille par partie, barème) ;
+- `node --test tests/correction.test.js` : 11 tests — gabarit identique à celui du dépôt Chaîne fonctionnelle
+  (empreinte SHA-256) ; configuration (4 activités analytiques et 7 graphiques, feuilles, barème, consignes) ;
   chaque élément à construire a son champ, corrigé « juste » seulement ; éléments attendus dans leur feuille et partant
   d'un point de la figure ; cinématique des réponses (équiprojectivité de l'embiellage, CIR de l'ellipsographe,
   composition du VTT) ; valeurs avec et sans unité, hors tolérance, autres unités acceptées ; étiquettes (la bonne
-  seule acceptée de sa liste) ; relations de composition justes et fausses.
-- `tests/navigateur.test.js` (Playwright, Chromium) : 15 parcours, tous réussis — accueil (12 cartes illustrées de
-  même taille, rubriques, téléphone, aucune mention de diplôme) ; adresse inconnue ; cours 1 (train, vélo, vecteurs,
-  hélice, MRUV, rotation, jeu, quiz 10/10) ; cours 2 (trois démonstrations pas à pas, bielle-manivelle, jeux, échelle,
+  seule acceptée de sa liste) ; relations de composition justes et fausses ; valeurs des quatre études analytiques
+  recalculées depuis les données (continuités, somme des distances de la vanne, 21 km de l'AGV, θ(t) absolu du
+  moteur) ; cases d'équation (virgule ou point, zéro, signe) ; courbes attendues (échantillons, phases accolées, valeur
+  propre à chaque phase d'un graphe discontinu).
+- `tests/navigateur.test.js` (Playwright, Chromium) : 21 parcours, tous réussis — accueil (15 cartes illustrées de
+  même taille, rubriques, téléphone, aucune mention de diplôme) ; adresse inconnue ; cours 1 (onze sections, train,
+  vélo, vecteurs, laboratoire des quatre mouvements, 27 exercices justes, réponse fausse et unité oubliée signalées,
+  solution, hélice, MRUV, rotation, jeu, quiz) ; cours 2 (trois démonstrations pas à pas, bielle-manivelle, jeux, échelle,
   quiz) ; atelier libre (accrochage, perpendiculaire, parallèle, projeté, compas, mesure, texte, gomme,
   annuler/rétablir, clavier, zoom, plein écran, document vierge) ; arbre de transmission construit à l'outil en
   entraînement jusqu'à 20/20 ; ellipsographe en examen (CIR construit à l'équerre, rien de corrigé avant la remise,
-  corrections superposées ensuite) ; pour chacune des sept activités, solution complète → 20/20 ; téléphone et
-  impression.
+  corrections superposées ensuite) ; imprimante 3D en entraînement (courbe posée par ses points, segment faux puis
+  juste, lecture des coordonnées, cases des équations) ; AGV (diagrammes discontinus tracés au segment, tous justes) et
+  vanne en examen ; pour chacune des onze activités, solution complète → 20/20 ; téléphone et impression.
 - Aucune erreur JavaScript dans aucun parcours.

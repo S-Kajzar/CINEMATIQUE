@@ -1,5 +1,6 @@
 // Images photographiées dans la page (Playwright + Chromium), pour l'accueil :
-//   - src/images/originaux/carte-<activité>.png : la feuille de chaque activité, corrections superposées ;
+//   - src/images/originaux/carte-<activité>.png : la feuille de chaque activité, corrections superposées (pour la
+//     vanne d'admission, sans feuille : sa loi de vitesse) ;
 //   - src/images/originaux/carte-cours-1.png, carte-cours-2.png, carte-atelier.png, carte-analytique.png,
 //     carte-etude.png : une figure de chaque cours, l'atelier libre, les rubriques à venir ;
 //   - src/images/originaux/accueil-*.png : les quatre feuilles du montage de l'accueil.
@@ -35,6 +36,14 @@ const { chromium } = require("playwright");
     "ellipsographe": [22, 22, 128], "portail-vis": [0, 12, 190], "chargeur-bobcat": [10, 148, 160],
     "suspension-vtt": [60, 12, 150] };
   for (const a of ACTS) await feuille(a, 1, `carte-${a}.png`, CADRES[a]);
+  // activités analytiques : les graphes complétés
+  await feuille("imprimante-3d", 1, "carte-imprimante-3d.png", [0, 2, 180]);
+  await feuille("agv", 2, "carte-agv.png", [0, 86, 180]);
+  await feuille("moteur-electrique", 1, "carte-moteur-electrique.png", [0, 86, 186]);
+  await p.goto(URL + "?ex=vanne-admission");
+  await p.click("[data-mode=training]");
+  await p.addStyleTag({ content: FIGE + ".fig-svg{max-width:none!important;width:960px}" });
+  await p.locator(".fig-svg svg").first().screenshot({ path: path.join(ORIG, "carte-vanne-admission.png") });
   for (const [a, f] of [["ellipsographe", "accueil-1.png"], ["embiellage-moto", "accueil-2.png"], ["pompe-petrole", "accueil-3.png"],
     ["chargeur-bobcat", "accueil-4.png"]]) await feuille(a, 1, f, CADRES[a]);
   // cours 1 : la roue de vélo et ses trajectoires

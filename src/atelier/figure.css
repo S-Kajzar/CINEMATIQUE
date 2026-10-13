@@ -1,5 +1,9 @@
 /* Figures des feuilles (unités : mm de feuille). Repris tel quel par la fenêtre « Imprimer le DR vierge ». */
-.at-fig .tr,.at-fig .fin,.at-fig .axe,.at-fig .piece,.at-fig .pivot,.at-fig .hach,.at-fig .fl,.at-fig .tire,.at-fig .cadre{vector-effect:non-scaling-stroke}
+.at-fig .tr,.at-fig .fin,.at-fig .axe,.at-fig .piece,.at-fig .pivot,.at-fig .hach,.at-fig .fl,.at-fig .tire,.at-fig .cadre,.at-fig .gr,.at-fig .gr2,.at-fig .crb{vector-effect:non-scaling-stroke}
+.at-fig .gr{stroke:#E6EBF1; stroke-width:.8}
+.at-fig .gr2{stroke:#C3CEDC; stroke-width:1}
+.at-fig .crb{stroke:#1C2530; stroke-width:2.2; fill:none; stroke-linejoin:round; stroke-linecap:round}
+.at-fig .crb-t{stroke-dasharray:7 4} .at-fig .crb-m{stroke-dasharray:10 4 2 4}
 .at-fig .tr{stroke:#1C2530; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round}
 .at-fig .fin{stroke:#1C2530; stroke-width:1.1; fill:none}
 .at-fig .axe{stroke:#5A6670; stroke-width:.9; stroke-dasharray:9 3 2 3; fill:none}
