@@ -534,9 +534,9 @@ def render_hub(exos):
     hero = ""
     if (IMAGES / "accueil.png").exists():
         src, w, h = png("accueil")
-        hero = (f'<figure class="home-hero"><img src="{src}" alt="Mécanismes étudiés : ellipsographe, embiellage, pompe à '
-                f'pétrole et chargeur compact, avec leurs constructions" width="{w}" height="{h}">'
-                '<figcaption class="small">Les mécanismes des activités de résolution graphique.</figcaption></figure>')
+        hero = (f'<figure class="home-hero"><img src="{src}" alt="Systèmes étudiés : automotrice à grande vitesse, axe '
+                f'd\'imprimante 3D, pompe à pétrole, VTT tout suspendu, vanne d\'air et chargeur compact" width="{w}" height="{h}">'
+                '<figcaption class="small">Quelques systèmes étudiés dans les activités.</figcaption></figure>')
     cours = "".join(carte(c["tag"] + pastille(c["partie"]), c["title"], c["mots"], f'?ex={c["key"]}', "Lire le cours",
                           c["vign"], c["alt"], "cours-card") for c in COURS)
     outil = carte(ATELIER_LIBRE["tag"], ATELIER_LIBRE["title"], ATELIER_LIBRE["mots"], f'?ex={ATELIER_LIBRE["key"]}',
@@ -766,11 +766,15 @@ CONTENT_CSS = r"""<style>
 .vv{white-space:nowrap}
 .vv sub{font-size:.72em}
 .ins-app{padding:6px 12px; font-size:1.05rem}
-.remarque{border-left:6px solid var(--jaune); background:var(--jaune-pale); padding:8px 14px; margin:12px 0; max-width:80ch}
+.remarque{border-left:6px solid var(--jaune); background:var(--jaune-pale); padding:8px 14px; margin:12px 0}
+/* le texte occupe toute la largeur de la zone blanche (cours et activités) : les largeurs de lecture du gabarit
+   (72 à 80 caractères) sont levées ici, sans modifier le gabarit */
+.part-body>p,.part-body>ul,.part-body>ol,.data,.q-stem,.q-hint,.q-expl,.selfeval,.recap-head p,.recap .final-detail,
+.home-sub,.es-lead,.consignes p{max-width:none}
 .fig-svg svg{display:block; width:100%; height:auto; background:#fff; border:1px solid var(--trait-fin)}
 
 /* ---------- cases numériques dans une équation ou un tableau (mécanisme « fast-q » du gabarit) ---------- */
-.ch-corps{margin:8px 0 6px; max-width:820px}
+.ch-corps{margin:8px 0 6px}
 .ch-l{margin:.3rem 0; line-height:2.5; font-size:1.02rem}
 .ch-u{color:var(--encre-2); font-size:.9rem}
 .grp .ch-corps .sol{display:inline-flex; align-items:center; gap:3px; vertical-align:middle; margin:0 .1em}
@@ -787,11 +791,11 @@ CONTENT_CSS = r"""<style>
 
 /* ---------- questions à plusieurs cases (mécanisme « fast-q » du gabarit) et étiquettes ---------- */
 .grp{margin:14px 0 6px; padding:10px 0 12px 14px; border-left:3px solid var(--trait-fin)}
-.grp-fields{display:flex; flex-direction:column; gap:6px; margin:8px 0 4px; max-width:820px}
+.grp-fields{display:flex; flex-direction:column; gap:6px; margin:8px 0 4px}
 .grp-l{display:grid; grid-template-columns:minmax(130px,.9fr) minmax(0,1.3fr); gap:4px 14px; align-items:center; padding:2px 0; border-bottom:1px dashed var(--trait-fin)}
 .grp-lab{font-size:.95rem}
 .grp .sol{display:flex; align-items:center; gap:8px}
-.bank{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:8px 0 10px; padding:8px 10px; background:var(--bleu-pale); border:1px solid var(--trait-fin); max-width:820px}
+.bank{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:8px 0 10px; padding:8px 10px; background:var(--bleu-pale); border:1px solid var(--trait-fin)}
 .bank-t{font:700 .78rem var(--f-titre); text-transform:uppercase; letter-spacing:.04em; color:var(--encre-2); margin-right:4px}
 .etq{font:600 .9rem var(--f-texte); color:var(--encre); background:#fff; border:1.5px solid var(--bleu); border-radius:3px; padding:5px 10px; cursor:grab; touch-action:manipulation; user-select:none; text-align:left}
 .etq:hover{background:#EAF1FA}
@@ -810,7 +814,7 @@ CONTENT_CSS = r"""<style>
 .grp .sol .mark{flex:0 0 4.6em; font-size:.82rem; font-weight:700}
 .grp .sol.is-ok .mark{color:var(--vert)} .grp .sol.is-ko .mark{color:var(--rouge)}
 .grp .fast-foot .q-status{font-weight:700}
-.grp-sol{max-width:780px; margin:4px 0 8px}
+.grp-sol{margin:4px 0 8px}
 .grp-sol td:last-child{font-weight:600}
 .mode-exam .btn-trace{display:none!important}
 @media (max-width:620px){ .grp-l{grid-template-columns:minmax(0,1fr)} }

@@ -410,7 +410,7 @@ def ellipsographe():
             "mots": ["Translation", "Mouvement plan", "CIR"], "methode": "CIR",
             "sub": "Deux coulisses, une barre porte-mine : trouver le centre instantané de rotation de la barre et en "
                    "déduire la vitesse du crayon.",
-            "hero": None, "docs": ["DT1"],
+            "hero": ("dessin-ellipsographe", "Dessin de l'ellipsographe : barre 2 articulée en A et B sur les coulisses 1 et 3", "L'ellipsographe (dessin de la séquence)."), "docs": ["DT1"],
             "parts": [{"title": "Vitesse du crayon d'un ellipsographe", "minutes": 40, "intro": intro, "meca": m,
                        "noms": [nom("A", "1/0"), nom("A", "2/0"), nom("B", "2/0"), nom("M", "2/0"), "I2/0"], "blocks": blocks}]}
 
@@ -492,7 +492,7 @@ def portail():
             "mots": ["Vis-écrou", "CIR", "Position fermée", "Engrenages"], "methode": "CIR",
             "sub": "Un écrou qui avance sur sa vis, une bielle, un portail qui pivote : vitesses par le CIR, vitesse "
                    "angulaire et nombre de tours du moteur pour fermer.",
-            "hero": None, "docs": ["DT1"],
+            "hero": ("dessin-portail", "Portail à vis vu de dessus : moteur, engrenage, vis, écrou, bielle et portail", "Le portail à vis, vu de dessus (dessin de la séquence)."), "docs": ["DT1"],
             "parts": [{"title": "Fermeture d'un portail à vis", "minutes": 60, "intro": intro, "meca": m,
                        "noms": [nom("C", "3/4"), nom("C", "2/4"), nom("B", "1/4"), nom("B", "2/4"), nom("M", "1/4"), "I2/4", "B'", "C'"],
                        "blocks": blocks}]}
@@ -587,7 +587,7 @@ def bobcat():
             "mots": ["CIR", "Composition", "Équiprojectivité", "Sécurité"], "methode": "Composition",
             "sub": "Le vérin de levage d'un chargeur compact : composer les vitesses au point C, puis vérifier la vitesse "
                    "du godet par rapport à une condition de sécurité.",
-            "hero": None, "docs": ["DT1"],
+            "hero": ("dessin-bobcat", "Dessin du chargeur compact Bobcat S185 et de son bras de levage", "Le chargeur compact Bobcat S185."), "docs": ["DT1"],
             "parts": [{"title": "Vitesse du godet pendant le levage", "minutes": 50, "intro": intro, "meca": m,
                        "noms": [nom("C", "5/4"), nom("C", "5/0"), nom("C", "4/0"), nom("C", "1/0"), nom("H", "1/0"), "I1/0"],
                        "blocks": blocks}]}

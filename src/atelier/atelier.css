@@ -78,7 +78,7 @@ body.at-plein-ouvert .banner,body.at-plein-ouvert .rail{display:none}
 
 /* questions de construction : chaque élément attendu sur la feuille, son état, puis son verdict */
 .trace{border-left-color:var(--bleu)}
-.trace-items{list-style:none; margin:6px 0 4px; padding:0; display:grid; gap:4px; max-width:760px}
+.trace-items{list-style:none; margin:6px 0 4px; padding:0; display:grid; gap:4px}
 .trace-items .it{display:grid; grid-template-columns:auto 1fr auto; gap:2px 10px; align-items:center; padding:5px 9px; background:#F6F8FB; border:1px solid var(--trait-fin); border-left:4px solid var(--trait)}
 .trace-items .it.present{border-left-color:var(--bleu)}
 .trace-items .sol{display:inline-flex; align-items:center; gap:4px; min-width:1.2em}
